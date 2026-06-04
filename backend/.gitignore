@@ -1,0 +1,26 @@
+# dependencies
+node_modules/
+
+# env
+.env
+*.env
+
+# mac
+.DS_Store
+
+# builds
+dist/
+build/
+
+# logs
+logs
+*.log
+
+# images/temp
+product images/
+
+# vite
+.vite/
+
+# misc
+a.html
