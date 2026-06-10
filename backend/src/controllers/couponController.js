@@ -1,0 +1,53 @@
+const couponService = require("../services/CouponService");
+
+class couponController {
+  async applyCoupon(req, res) {
+    try {
+      const { apply, code, orderValue } = req.body;
+
+      // ✅ Fixed: req.user not req.useeer
+      const user = req.user;
+
+      let cart;
+
+      if (apply === "true") {
+        cart = await couponService.applyCoupon(code, orderValue, user);
+      } else {
+        cart = await couponService.removeCoupon(code, user);
+      }
+
+      return res.status(200).json(cart);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  }
+
+  async createCoupon(req, res) {
+    try {
+      const coupon = await couponService.createCoupon(req.body);
+      return res.status(200).json(coupon);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  }
+
+  async deleteCoupon(req, res) {
+    try {
+      await couponService.deleteCoupon(req.params.id);
+      return res.status(200).json({ message: "Coupon deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  }
+
+  async getAllCoupons(req, res) {
+    try {
+      const coupons = await couponService.getAllCoupons();
+      return res.status(200).json(coupons);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  }
+}
+
+module.exports = new couponController();
