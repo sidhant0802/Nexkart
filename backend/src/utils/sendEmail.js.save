@@ -1,0 +1,26 @@
+const nodemailer = require('nodemailer');
+async function sendVerificationEmail(to, subject, text) {
+    const transporter = nodemailer.createTransport({
+        service: 'gmail', 
+        auth: {
+            user: 'your email',
+            pass: 'your gmail app password' 
+        }
+    });
+
+    const mailOptions = {
+        from: 'your email',
+        to,
+        subject,
+        te
+
+sed -i '' \
+  's/Topwere/Topwear/g; 
+   s/Bottomwere/Bottomwear/g; 
+   s/Innerwere And Sleepwere/Innerwear \& Sleepwear/g; 
+   s/Footwere/Footwear/g; 
+   s/Persional Care And  grooming/Personal Care \& Grooming/g; 
+   s/Buauty \& Personal Care/Beauty \& Personal Care/g' \
+  /Users/sidhant/Desktop/Ecommerce/frontend/src/data/category/mainCategory.ts
+
+module.exports = { sendVerificationEmail };
