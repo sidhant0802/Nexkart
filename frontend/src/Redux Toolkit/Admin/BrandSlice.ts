@@ -3,46 +3,55 @@ import { api } from "../../Config/Api";
 
 const API_URL = "/api/brands";
 
-// ════════════════════════════════════════════════════════
-// TYPES
-// ════════════════════════════════════════════════════════
-
 export interface Brand {
-  _id?:         string;
-  name:         string;
-  slug?:        string;
-  logo:         string;
-  description?: string;
-  category?:    string;
-  featured?:    boolean;
-  isActive?:    boolean;
-  createdAt?:   string;
-  updatedAt?:   string;
+  _id?:          string;
+  name:          string;
+  slug?:         string;
+  logo:          string;
+  description?:  string;
+  category?:     string;
+  featured?:     boolean;
+  isActive?:     boolean;
+  productCount?: number;
+  createdAt?:    string;
+  updatedAt?:    string;
 }
 
 interface BrandState {
-  brands:  Brand[];
-  loading: boolean;
-  error:   string | null;
-  created: boolean;
-  updated: boolean;
-  deleted: boolean;
+  brands:           Brand[];
+  brandsByCategory: Brand[];
+  loading:          boolean;
+  categoryLoading:  boolean;
+  error:            string | null;
+  created:          boolean;
+  updated:          boolean;
+  deleted:          boolean;
 }
 
 const initialState: BrandState = {
-  brands: [], loading: false, error: null,
+  brands: [], brandsByCategory: [],
+  loading: false, categoryLoading: false, error: null,
   created: false, updated: false, deleted: false,
 };
-
-// ════════════════════════════════════════════════════════
-// THUNKS
-// ════════════════════════════════════════════════════════
 
 export const fetchBrands = createAsyncThunk<Brand[], { category?: string; featured?: boolean } | undefined>(
   "brand/fetchAll",
   async (params, { rejectWithValue }) => {
     try {
       const res = await api.get<Brand[]>(API_URL, { params });
+      return res.data;
+    } catch (err: any) {
+      return rejectWithValue(err.response?.data?.error || "Failed to fetch brands");
+    }
+  }
+);
+
+// ✅ NEW: brands actually selling in a category
+export const fetchBrandsByCategory = createAsyncThunk<Brand[], string>(
+  "brand/fetchByCategory",
+  async (categoryId, { rejectWithValue }) => {
+    try {
+      const res = await api.get<Brand[]>(`${API_URL}/by-category/${categoryId}`);
       return res.data;
     } catch (err: any) {
       return rejectWithValue(err.response?.data?.error || "Failed to fetch brands");
@@ -98,54 +107,46 @@ export const toggleBrandFeatured = createAsyncThunk<Brand, string>(
   }
 );
 
-// ════════════════════════════════════════════════════════
-// SLICE
-// ════════════════════════════════════════════════════════
-
 const brandSlice = createSlice({
   name: "brand",
   initialState,
   reducers: {
     resetBrandFlags: (s) => {
-      s.created = false;
-      s.updated = false;
-      s.deleted = false;
-      s.error = null;
+      s.created = false; s.updated = false; s.deleted = false; s.error = null;
     },
+    clearBrandsByCategory: (s) => { s.brandsByCategory = []; },
   },
   extraReducers: (b) => {
     b
-      // Fetch
       .addCase(fetchBrands.pending,   (s) => { s.loading = true; s.error = null; })
       .addCase(fetchBrands.fulfilled, (s, a: PayloadAction<Brand[]>) => {
-        s.brands = a.payload;
-        s.loading = false;
+        s.brands = a.payload; s.loading = false;
       })
       .addCase(fetchBrands.rejected,  (s, a) => { s.loading = false; s.error = a.payload as string; })
 
-      // Create
+      .addCase(fetchBrandsByCategory.pending,   (s) => { s.categoryLoading = true; })
+      .addCase(fetchBrandsByCategory.fulfilled, (s, a: PayloadAction<Brand[]>) => {
+        s.brandsByCategory = a.payload; s.categoryLoading = false;
+      })
+      .addCase(fetchBrandsByCategory.rejected,  (s) => { s.categoryLoading = false; })
+
       .addCase(createBrand.pending,   (s) => { s.loading = true; s.error = null; s.created = false; })
       .addCase(createBrand.fulfilled, (s, a: PayloadAction<Brand>) => {
-        s.brands.unshift(a.payload);
-        s.loading = false;
-        s.created = true;
+        s.brands.unshift(a.payload); s.loading = false; s.created = true;
       })
       .addCase(createBrand.rejected,  (s, a) => { s.loading = false; s.error = a.payload as string; })
 
-      // Update
       .addCase(updateBrand.fulfilled, (s, a: PayloadAction<Brand>) => {
         const i = s.brands.findIndex(brand => brand._id === a.payload._id);
         if (i !== -1) s.brands[i] = a.payload;
         s.updated = true;
       })
 
-      // Delete
       .addCase(deleteBrand.fulfilled, (s, a: PayloadAction<string>) => {
         s.brands = s.brands.filter(b => b._id !== a.payload);
         s.deleted = true;
       })
 
-      // Toggle Featured
       .addCase(toggleBrandFeatured.fulfilled, (s, a: PayloadAction<Brand>) => {
         const i = s.brands.findIndex(brand => brand._id === a.payload._id);
         if (i !== -1) s.brands[i] = a.payload;
@@ -153,5 +154,5 @@ const brandSlice = createSlice({
   },
 });
 
-export const { resetBrandFlags } = brandSlice.actions;
+export const { resetBrandFlags, clearBrandsByCategory } = brandSlice.actions;
 export default brandSlice.reducer;

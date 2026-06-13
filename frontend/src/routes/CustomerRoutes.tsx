@@ -30,6 +30,10 @@ import BrandProducts  from '../customer/pages/Brands/BrandProducts'
 import AllBrands      from '../customer/pages/Brands/AllBrands'
 import SmartSearchResults from "../customer/pages/Search/SmartSearchResults";
 
+// 🤖 AI Chatbot
+import ChatBot       from '../customer/pages/ChatBot/ChatBot'
+import ChatBotButton from '../customer/pages/ChatBot/ChatBotButton'
+
 // ✅ NEW — Checkout wizard
 import Checkout         from '../customer/pages/Checkout/Checkout'
 import CheckoutSuccess  from '../customer/pages/Checkout/CheckoutSuccess'
@@ -130,7 +134,9 @@ const CustomerRoutes = () => {
           <Route path="/wishlist" element={
             <ProtectedRoute><Wishlist /></ProtectedRoute>
           } />
-<Route path="/search" element={<SmartSearchResults />} />
+
+          <Route path="/search" element={<SmartSearchResults />} />
+
           {/* ✅ NEW — Main checkout wizard ✨ */}
           <Route path="/checkout" element={
             <ProtectedRoute><Checkout /></ProtectedRoute>
@@ -153,7 +159,12 @@ const CustomerRoutes = () => {
 
           <Route path="*" element={<NotFound />} />
         </Routes>
+
         <Footer />
+
+        {/* 🤖 AI Chatbot - Available on every page */}
+        <ChatBotButton />
+        <ChatBot />
       </div>
     </ThemeContext.Provider>
   );

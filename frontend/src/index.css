@@ -1,0 +1,84 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #f8f9ff;
+}
+
+@layer components {
+  .nexkart-gradient {
+    @apply bg-gradient-to-r from-[#6C63FF] to-[#FF6584];
+  }
+  
+  .nexkart-text-gradient {
+    @apply bg-gradient-to-r from-[#6C63FF] to-[#FF6584] bg-clip-text text-transparent;
+  }
+
+  .card-hover {
+    @apply transition-all duration-300 hover:shadow-2xl hover:-translate-y-1;
+  }
+
+  .section-title {
+    @apply text-2xl lg:text-4xl font-bold text-center mb-2;
+  }
+
+  .glass-effect {
+    @apply bg-white bg-opacity-80 backdrop-blur-md;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #6C63FF;
+  border-radius: 10px;
+}
+
+
+
+/* Custom scrollbar for chatbot */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #2a2a3d;
+  border-radius: 3px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #6C63FF;
+}
+
+/* Slide up animation */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-slideUp {
+  animation: slideUp 0.3s ease-out;
+}

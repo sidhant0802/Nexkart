@@ -45,6 +45,7 @@ import ProductReviewCard          from "../../Review/ProductReviewCard";
 import SmilarProduct              from "../SimilarProduct/SmilarProduct";
 import ZoomableImage              from "./ZoomableImage";
 import type { ProductListing }    from "../../../../types/productTypes";
+import AIInsights from "./AIInsights";
 
 const isValidObjectId = (id: string) => /^[a-f\d]{24}$/i.test(id);
 
@@ -805,7 +806,7 @@ const isInCart = !!cartItem;
             ✍️ Write a Review
           </motion.button>
         </div>
-
+        
         <RatingCard totalReview={review.reviews?.length ?? 0} reviews={review.reviews ?? []} />
 
         {/* Customer photos */}
