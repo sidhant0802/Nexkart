@@ -126,25 +126,16 @@ const Auth = () => {
         <div className="hidden lg:flex lg:w-1/2 flex-col justify-between p-12 relative">
 
           {/* Logo */}
-          <motion.div
+                   <motion.div
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
-            className="flex items-center gap-3"
+            className="flex items-center"
           >
-            <motion.div
-              animate={{ rotate: [0, 5, -5, 0] }}
-              transition={{ duration: 4, repeat: Infinity }}
-              className="relative"
-            >
-              <div className="absolute inset-0 bg-purple-500/40 rounded-2xl blur-xl" />
-              <div className="relative w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500 via-indigo-500 to-pink-500 flex items-center justify-center shadow-2xl">
-                <Zap size={26} className="text-white" fill="white" />
-              </div>
-            </motion.div>
-            <div>
-              <span className="text-3xl font-black text-white tracking-tight">Nexkart</span>
-              <p className="text-white/40 text-xs mt-0.5">Premium Marketplace</p>
-            </div>
+            <img 
+              src="/logo.png" 
+              alt="Nexkart" 
+              className="h-16 w-auto drop-shadow-2xl"
+            />
           </motion.div>
 
           {/* Center Content */}
@@ -270,17 +261,16 @@ const Auth = () => {
             }}
           >
             {/* Mobile Logo */}
-            <motion.div
+                     <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="flex items-center justify-center gap-2 mb-8 lg:hidden"
+              className="flex items-center justify-center mb-8 lg:hidden"
             >
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-2xl">
-                <Zap size={20} className="text-white" fill="white" />
-              </div>
-              <span className="text-2xl font-black bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 bg-clip-text text-transparent">
-                Nexkart
-              </span>
+              <img 
+                src="/logo.png" 
+                alt="Nexkart" 
+                className="h-12 w-auto"
+              />
             </motion.div>
 
             {/* Glassmorphism Card */}

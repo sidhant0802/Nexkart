@@ -22,17 +22,30 @@ const initialState: AiChatBotState = {
   messages: [],
   isOpen: false,
 };
-
-// 🆕 Smart chat thunk
-export const sendSmartMessage = createAsyncThunk<any, { message: string; history: Message[] }>(
+// 🆕 Smart chat thunk (with product context)
+export const sendSmartMessage = createAsyncThunk<
+  any,
+  { message: string; history: Message[]; productId?: string | null }
+>(
   "aiChatBot/sendSmart",
-  async ({ message, history }, { rejectWithValue }) => {
+  async ({ message, history, productId }, { rejectWithValue }) => {
     try {
       const jwt = localStorage.getItem("jwt");
-      
+
+      // 🐛 Debug log
+      console.log("📤 Sending to backend:", { 
+        message, 
+        productId, 
+        hasJwt: !!jwt 
+      });
+
       const response = await api.post(
         "/chat/smart",
-        { message, history },
+        { 
+          message, 
+          history, 
+          productId: productId || null 
+        },
         {
           headers: jwt 
             ? { 
@@ -42,9 +55,11 @@ export const sendSmartMessage = createAsyncThunk<any, { message: string; history
             : { "Content-Type": "application/json" },
         }
       );
+
+      console.log("📥 Backend response:", response.data);
       return response.data;
     } catch (error: any) {
-      console.error("Chat error:", error.response?.data);
+      console.error("❌ Chat error:", error.response?.data);
       return rejectWithValue(error.response?.data?.error || "Failed to get response");
     }
   }

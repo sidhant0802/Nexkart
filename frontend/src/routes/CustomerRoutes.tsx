@@ -28,15 +28,17 @@ import AllFashion     from '../customer/pages/Home/AllFashion/AllFashion'
 import AllFeatured    from '../customer/pages/Home/AllFeatured/AllFeatured'
 import BrandProducts  from '../customer/pages/Brands/BrandProducts'
 import AllBrands      from '../customer/pages/Brands/AllBrands'
-import SmartSearchResults from "../customer/pages/Search/SmartSearchResults";
-
-// 🤖 AI Chatbot
+import SmartSearchResults from '../customer/pages/Search/SmartSearchResults'
 import ChatBot       from '../customer/pages/ChatBot/ChatBot'
 import ChatBotButton from '../customer/pages/ChatBot/ChatBotButton'
-
-// ✅ NEW — Checkout wizard
 import Checkout         from '../customer/pages/Checkout/Checkout'
 import CheckoutSuccess  from '../customer/pages/Checkout/CheckoutSuccess'
+
+// ✅ NEW imports
+import ReturnRequest from '../customer/pages/Account/ReturnRequest'
+import OrderChat     from '../customer/pages/Account/OrderChat'
+import { initSocket, disconnectSocket } from '../config/socket'
+import { fetchUserNotifications } from '../Redux Toolkit/Customer/NotificationSlice'
 
 export const ThemeContext = createContext<{
   isDark: boolean;
@@ -47,7 +49,7 @@ export const useTheme = () => useContext(ThemeContext);
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const auth       = useAppSelector((s) => s.auth);
-  const isLoggedIn = !!localStorage.getItem("jwt") || !!auth?.jwt;
+  const isLoggedIn = !!localStorage.getItem('jwt') || !!auth?.jwt;
   if (!isLoggedIn) return <Navigate to="/login" replace />;
   return <>{children}</>;
 };
@@ -57,28 +59,38 @@ const CustomerRoutes = () => {
   const auth     = useAppSelector((s) => s.auth);
 
   const [isDark, setIsDark] = useState(
-    () => localStorage.getItem("nexkart-theme") !== "light"
+    () => localStorage.getItem('nexkart-theme') !== 'light'
   );
 
   const toggleTheme = () => {
     setIsDark((prev) => {
       const next = !prev;
-      localStorage.setItem("nexkart-theme", next ? "dark" : "light");
-      document.documentElement.classList.toggle("dark", next);
+      localStorage.setItem('nexkart-theme', next ? 'dark' : 'light');
+      document.documentElement.classList.toggle('dark', next);
       return next;
     });
   };
 
   useEffect(() => {
-    document.documentElement.classList.toggle("dark", isDark);
+    document.documentElement.classList.toggle('dark', isDark);
   }, []);
 
   useEffect(() => {
-    const jwt = localStorage.getItem("jwt") || auth?.jwt;
+    const jwt = localStorage.getItem('jwt') || auth?.jwt;
     if (jwt) {
-      dispatch(fetchUserCart(typeof jwt === "string" ? jwt : ""));
+      dispatch(fetchUserCart(typeof jwt === 'string' ? jwt : ''));
       dispatch(getWishlistByUserId());
+      // ✅ Fetch notifications
+      dispatch(fetchUserNotifications());
+      // ✅ Init socket for real-time
+      initSocket(typeof jwt === 'string' ? jwt : '');
+    } else {
+      disconnectSocket();
     }
+
+    return () => {
+      // Don't disconnect on re-render, only on logout
+    };
   }, [auth.jwt]);
 
   return (
@@ -86,8 +98,8 @@ const CustomerRoutes = () => {
       <div
         className="min-h-screen transition-colors duration-300"
         style={{
-          backgroundColor: isDark ? "#0D0D12" : "#f9fafb",
-          color:           isDark ? "#ffffff"  : "#111827",
+          backgroundColor: isDark ? '#0D0D12' : '#f9fafb',
+          color:           isDark ? '#ffffff'  : '#111827',
         }}
       >
         <Navbar />
@@ -112,14 +124,12 @@ const CustomerRoutes = () => {
           <Route path="/brands/:brandName"      element={<BrandProducts />} />
           <Route path="/search-products"        element={<SearchProducts />} />
           <Route path="/reviews/:productId"     element={<Reviews />} />
-
-          {/* ✅ Product Details */}
           <Route
             path="/product-details/:categoryId/:name/:productId"
             element={<ProductDetails />}
           />
 
-          {/* ✅ Write Review */}
+          {/* ── Reviews ── */}
           <Route path="/write-review/:productId" element={
             <ProtectedRoute><WriteReviews /></ProtectedRoute>
           } />
@@ -127,32 +137,29 @@ const CustomerRoutes = () => {
             <ProtectedRoute><WriteReviews /></ProtectedRoute>
           } />
 
-          {/* ✅ Protected */}
-          <Route path="/cart" element={
-            <ProtectedRoute><Cart /></ProtectedRoute>
-          } />
-          <Route path="/wishlist" element={
-            <ProtectedRoute><Wishlist /></ProtectedRoute>
-          } />
-
+          {/* ── Protected ── */}
+          <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
+          <Route path="/wishlist" element={<ProtectedRoute><Wishlist /></ProtectedRoute>} />
           <Route path="/search" element={<SmartSearchResults />} />
 
-          {/* ✅ NEW — Main checkout wizard ✨ */}
-          <Route path="/checkout" element={
-            <ProtectedRoute><Checkout /></ProtectedRoute>
-          } />
-          <Route path="/checkout/success" element={
-            <ProtectedRoute><CheckoutSuccess /></ProtectedRoute>
-          } />
+          {/* ── Checkout ── */}
+          <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
+          <Route path="/checkout/success" element={<ProtectedRoute><CheckoutSuccess /></ProtectedRoute>} />
+          <Route path="/checkout/address" element={<ProtectedRoute><Address /></ProtectedRoute>} />
 
-          {/* Legacy address page (kept for backward compat) */}
-          <Route path="/checkout/address" element={
-            <ProtectedRoute><Address /></ProtectedRoute>
-          } />
+          {/* ── Account ── */}
+          <Route path="/account/*" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
 
-          <Route path="/account/*" element={
-            <ProtectedRoute><Profile /></ProtectedRoute>
-          } />
+          {/* ✅ NEW — Return & Chat (standalone pages outside Profile layout) */}
+          <Route
+            path="/account/orders/:orderId/item/:orderItemId/return"
+            element={<ProtectedRoute><ReturnRequest /></ProtectedRoute>}
+          />
+          <Route
+            path="/account/orders/:orderId/chat"
+            element={<ProtectedRoute><OrderChat /></ProtectedRoute>}
+          />
+
           <Route path="/payment-success/:orderId" element={
             <ProtectedRoute><PaymentSuccessHandler /></ProtectedRoute>
           } />
@@ -161,8 +168,6 @@ const CustomerRoutes = () => {
         </Routes>
 
         <Footer />
-
-        {/* 🤖 AI Chatbot - Available on every page */}
         <ChatBotButton />
         <ChatBot />
       </div>

@@ -3,51 +3,53 @@ import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ShoppingBag, User, MapPin, CreditCard, LogOut,
-  Settings as SettingsIcon,            // ✅ RENAMED to SettingsIcon
+  Settings as SettingsIcon,
   Heart, ChevronRight, X, CheckCircle, AlertCircle,
 } from "lucide-react";
 import OrderTracking from "./OrderTracking";
-import SettingsPage from "./Settings/Settings";   // ✅ RENAMED to SettingsPage
-import Order from "./Order";
-import UserDetails from "./UserDetails";
-import SavedCards from "./SavedCards";
-import OrderDetails from "./OrderDetails";
-import Addresses from "./Adresses";
+import SettingsPage  from "./Settings/Settings";
+import Order         from "./Order";
+import UserDetails   from "./UserDetails";
+import SavedCards    from "./SavedCards";
+import OrderDetails  from "./OrderDetails";
+import Addresses     from "./Adresses";
+import OrderChat     from "./OrderChat"; // ✅ NEW
 
 import { useAppDispatch, useAppSelector } from "../../../Redux Toolkit/Store";
 import { performLogout } from "../../../Redux Toolkit/Customer/AuthSlice";
 import { useTheme } from "../../../routes/CustomerRoutes";
 
 const menuItems = [
-  { name: "Orders",      path: "/account/orders",      icon: ShoppingBag,  color: "#a78bfa" },
-  { name: "Profile",     path: "/account/profile",     icon: User,         color: "#3b82f6" },
-  { name: "Addresses",   path: "/account/addresses",   icon: MapPin,       color: "#10b981" },
-  { name: "Saved Cards", path: "/account/saved-card",  icon: CreditCard,   color: "#f59e0b" },
+  { name: "Orders",      path: "/account/orders",     icon: ShoppingBag,  color: "#a78bfa" },
+  { name: "Profile",     path: "/account/profile",    icon: User,         color: "#3b82f6" },
+  { name: "Addresses",   path: "/account/addresses",  icon: MapPin,       color: "#10b981" },
+  { name: "Saved Cards", path: "/account/saved-card", icon: CreditCard,   color: "#f59e0b" },
   { name: "Wishlist",    path: "/wishlist",            icon: Heart,        color: "#ec4899" },
-  { name: "Settings",    path: "/account/settings",    icon: SettingsIcon, color: "#06b6d4" },   // ✅ uses SettingsIcon
+  { name: "Settings",    path: "/account/settings",   icon: SettingsIcon, color: "#06b6d4" },
 ];
 
 const Profile = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const dispatch = useAppDispatch();
+  const navigate   = useNavigate();
+  const location   = useLocation();
+  const dispatch   = useAppDispatch();
   const { isDark } = useTheme();
-const user   = useAppSelector((s) => s.user);
-const orders = useAppSelector((s) => s.orders);
 
-  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; type: "success" | "error" }>({
-    open: false, message: "", type: "success",
-  });
+  const user   = useAppSelector((s) => s.user);
+  const orders = useAppSelector((s) => s.orders);
 
-  const handleLogout = () => {
-    dispatch(performLogout());
-    navigate("/");
-  };
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean; message: string; type: "success" | "error";
+  }>({ open: false, message: "", type: "success" });
+
+  const handleLogout = () => { dispatch(performLogout()); navigate("/"); };
 
   useEffect(() => {
-    if (user.profileUpdated) setSnackbar({ open: true, message: "Profile updated successfully!", type: "success" });
-    if (orders.orderCanceled) setSnackbar({ open: true, message: "Order canceled successfully", type: "success" });
-    if (user.error) setSnackbar({ open: true, message: user.error, type: "error" });
+    if (user.profileUpdated)
+      setSnackbar({ open: true, message: "Profile updated successfully!", type: "success" });
+    if (orders.orderCanceled)
+      setSnackbar({ open: true, message: "Order canceled successfully", type: "success" });
+    if (user.error)
+      setSnackbar({ open: true, message: user.error, type: "error" });
   }, [user.profileUpdated, orders.orderCanceled, user.error]);
 
   useEffect(() => {
@@ -62,75 +64,67 @@ const orders = useAppSelector((s) => s.orders);
     return name.trim().split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
   };
 
-  const totalOrders = orders?.orders?.length || 0;
+  const totalOrders    = orders?.orders?.length        || 0;
   const totalAddresses = user?.user?.addresses?.length || 0;
+
+  // ✅ Check if we're on the chat route to remove padding from panel
+  const isChatRoute = location.pathname.includes('/chat');
 
   return (
     <div className={`min-h-screen py-10 px-4 lg:px-12 ${isDark ? "bg-[#0a0a0f]" : "bg-gray-50"}`}>
       <div className="max-w-7xl mx-auto">
 
-        {/* Page Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-6"
-        >
-          <h1 className={`text-2xl font-black ${isDark ? "text-white" : "text-gray-900"}`}>
-            My Account
-          </h1>
-          <p className={`text-sm mt-1 ${isDark ? "text-white/40" : "text-gray-500"}`}>
-            Manage your profile, orders & preferences
-          </p>
-        </motion.div>
+        {/* Page Header — hide on chat for more space */}
+        {!isChatRoute && (
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
+            <h1 className={`text-2xl font-black ${isDark ? "text-white" : "text-gray-900"}`}>
+              My Account
+            </h1>
+            <p className={`text-sm mt-1 ${isDark ? "text-white/40" : "text-gray-500"}`}>
+              Manage your profile, orders & preferences
+            </p>
+          </motion.div>
+        )}
+
+        {isChatRoute && <div className="mb-4" />}
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-          {/* ═══════════ LEFT SIDEBAR ═══════════ */}
-          <aside className="lg:col-span-3 space-y-4">
+          {/* ═══════ LEFT SIDEBAR — hide on mobile chat ═══════ */}
+          <aside className={`lg:col-span-3 space-y-4 ${isChatRoute ? 'hidden lg:block' : ''}`}>
 
             {/* User Card */}
             <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
               className={`relative rounded-3xl p-6 overflow-hidden ${
                 isDark ? "border border-white/10" : "border border-gray-200 shadow-sm"
               }`}
               style={{
                 background: isDark
-                  ? "linear-gradient(135deg, rgba(139,92,246,0.1) 0%, rgba(99,102,241,0.05) 100%)"
-                  : "linear-gradient(135deg, #f5f3ff 0%, #ffffff 100%)",
+                  ? "linear-gradient(135deg,rgba(139,92,246,0.1) 0%,rgba(99,102,241,0.05) 100%)"
+                  : "linear-gradient(135deg,#f5f3ff 0%,#ffffff 100%)",
               }}
             >
               <div className="absolute -top-12 -right-12 w-32 h-32 rounded-full opacity-30 blur-3xl"
-                style={{ background: "linear-gradient(135deg, #8b5cf6, #ec4899)" }}
-              />
-
+                style={{ background: "linear-gradient(135deg,#8b5cf6,#ec4899)" }} />
               <div className="relative z-10 text-center">
                 <div className="relative inline-block mb-4">
                   <div className="w-20 h-20 rounded-full flex items-center justify-center text-white text-2xl font-black shadow-2xl"
-                    style={{ background: "linear-gradient(135deg, #8b5cf6, #6366f1)" }}
-                  >
+                    style={{ background: "linear-gradient(135deg,#8b5cf6,#6366f1)" }}>
                     {getInitials(user.user?.fullName)}
                   </div>
                   <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-green-500 border-2 border-white flex items-center justify-center">
                     <div className="w-2 h-2 rounded-full bg-white" />
                   </div>
                 </div>
-
                 <h2 className={`font-black text-base ${isDark ? "text-white" : "text-gray-900"}`}>
                   {user.user?.fullName || "User"}
                 </h2>
                 <p className={`text-xs mt-0.5 ${isDark ? "text-white/40" : "text-gray-500"}`}>
                   {user.user?.email}
                 </p>
-
                 <div className="inline-flex items-center gap-1 mt-3 px-2.5 py-1 rounded-full text-[10px] font-bold"
-                  style={{
-                    background: "rgba(34,197,94,0.12)",
-                    color: "#22c55e",
-                    border: "1px solid rgba(34,197,94,0.25)",
-                  }}
-                >
+                  style={{ background: "rgba(34,197,94,0.12)", color: "#22c55e", border: "1px solid rgba(34,197,94,0.25)" }}>
                   <CheckCircle size={10} /> Verified Account
                 </div>
               </div>
@@ -142,18 +136,13 @@ const orders = useAppSelector((s) => s.orders);
                 { label: "Orders",    value: totalOrders,    color: "#a78bfa", icon: ShoppingBag },
                 { label: "Addresses", value: totalAddresses, color: "#10b981", icon: MapPin },
               ].map((s, i) => (
-                <motion.div
-                  key={s.label}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
+                <motion.div key={s.label}
+                  initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 + i * 0.05 }}
-                  className={`rounded-2xl p-3 text-center ${
-                    isDark ? "bg-white/5 border border-white/8" : "bg-white border border-gray-100 shadow-sm"
-                  }`}
+                  className={`rounded-2xl p-3 text-center ${isDark ? "bg-white/5 border border-white/8" : "bg-white border border-gray-100 shadow-sm"}`}
                 >
                   <div className="w-8 h-8 mx-auto rounded-lg flex items-center justify-center mb-1.5"
-                    style={{ background: `${s.color}15` }}
-                  >
+                    style={{ background: `${s.color}15` }}>
                     <s.icon size={14} style={{ color: s.color }} />
                   </div>
                   <p className={`text-lg font-black ${isDark ? "text-white" : "text-gray-900"}`}>{s.value}</p>
@@ -164,19 +153,14 @@ const orders = useAppSelector((s) => s.orders);
 
             {/* Menu */}
             <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 }}
-              className={`rounded-2xl overflow-hidden ${
-                isDark ? "bg-white/5 border border-white/8" : "bg-white border border-gray-100 shadow-sm"
-              }`}
+              className={`rounded-2xl overflow-hidden ${isDark ? "bg-white/5 border border-white/8" : "bg-white border border-gray-100 shadow-sm"}`}
             >
               {menuItems.map((item) => {
                 const isActive = location.pathname === item.path;
                 return (
-                  <motion.button
-                    key={item.name}
-                    whileHover={{ x: 4 }}
+                  <motion.button key={item.name} whileHover={{ x: 4 }}
                     onClick={() => navigate(item.path)}
                     className="w-full flex items-center justify-between px-4 py-3.5 transition-all relative"
                     style={{
@@ -186,16 +170,13 @@ const orders = useAppSelector((s) => s.orders);
                     }}
                   >
                     {isActive && (
-                      <motion.div
-                        layoutId="activeMenu"
+                      <motion.div layoutId="activeMenu"
                         className="absolute left-0 top-0 bottom-0 w-1 rounded-r"
-                        style={{ background: item.color }}
-                      />
+                        style={{ background: item.color }} />
                     )}
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-lg flex items-center justify-center"
-                        style={{ background: `${item.color}15` }}
-                      >
+                        style={{ background: `${item.color}15` }}>
                         <item.icon size={15} style={{ color: item.color }} />
                       </div>
                       <span className={`text-sm font-semibold ${
@@ -211,18 +192,13 @@ const orders = useAppSelector((s) => s.orders);
                 );
               })}
 
-              <motion.button
-                whileHover={{ x: 4 }}
-                onClick={handleLogout}
+              <motion.button whileHover={{ x: 4 }} onClick={handleLogout}
                 className="w-full flex items-center justify-between px-4 py-3.5 border-t"
-                style={{
-                  borderColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)",
-                }}
+                style={{ borderColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)" }}
               >
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg flex items-center justify-center"
-                    style={{ background: "rgba(239,68,68,0.12)" }}
-                  >
+                    style={{ background: "rgba(239,68,68,0.12)" }}>
                     <LogOut size={15} className="text-red-400" />
                   </div>
                   <span className="text-sm font-semibold text-red-400">Logout</span>
@@ -232,25 +208,32 @@ const orders = useAppSelector((s) => s.orders);
             </motion.div>
           </aside>
 
-          {/* ═══════════ RIGHT MAIN CONTENT ═══════════ */}
-          <main className="lg:col-span-9">
+          {/* ═══════ RIGHT MAIN CONTENT ═══════ */}
+          <main className={isChatRoute ? "lg:col-span-9 col-span-1" : "lg:col-span-9"}>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className={`rounded-3xl p-6 lg:p-8 min-h-[600px] ${
+              className={`rounded-3xl ${
+                // ✅ No padding for chat — it handles its own layout
+                isChatRoute
+                  ? 'overflow-hidden'
+                  : 'p-6 lg:p-8'
+              } min-h-[600px] ${
                 isDark ? "bg-white/5 border border-white/8" : "bg-white border border-gray-100 shadow-sm"
               }`}
             >
-             <Routes>
-  <Route path="/"           element={<UserDetails />} />
-  <Route path="/orders"     element={<Order />} />
-  <Route path="/orders/:orderId/track" element={<OrderTracking />} />
-  <Route path="/orders/:orderId/item/:orderItemId" element={<OrderDetails />} />
-  <Route path="/profile"    element={<UserDetails />} />
-  <Route path="/saved-card" element={<SavedCards />} />
-  <Route path="/addresses"  element={<Addresses />} />
-  <Route path="/settings"   element={<SettingsPage />} />
-</Routes>
+              <Routes>
+                <Route path="/"                                    element={<UserDetails />}  />
+                <Route path="/profile"                             element={<UserDetails />}  />
+                <Route path="/orders"                              element={<Order />}         />
+                <Route path="/orders/:orderId/track"               element={<OrderTracking />} />
+                <Route path="/orders/:orderId/item/:orderItemId"   element={<OrderDetails />} />
+                {/* ✅ Chat now lives INSIDE the account panel */}
+                <Route path="/orders/:orderId/chat"                element={<OrderChat />}    />
+                <Route path="/saved-card"                          element={<SavedCards />}   />
+                <Route path="/addresses"                           element={<Addresses />}    />
+                <Route path="/settings"                            element={<SettingsPage />} />
+              </Routes>
             </motion.div>
           </main>
         </div>

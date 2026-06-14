@@ -120,18 +120,18 @@ const Footer = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
 
           {/* Brand Column */}
+                   {/* Brand Column */}
           <div className="lg:col-span-3 space-y-6">
             <Link to="/">
               <motion.div
                 whileHover={{ scale: 1.03 }}
-                className="flex items-center gap-2.5 w-fit"
+                className="flex items-center w-fit"
               >
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
-                  <Zap size={20} className="text-white" />
-                </div>
-                <span className="text-2xl font-black bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-                  Nexkart
-                </span>
+                <img 
+                  src="/logo.png" 
+                  alt="Nexkart" 
+                  className="h-14 w-auto"
+                />
               </motion.div>
             </Link>
 

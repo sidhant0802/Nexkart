@@ -1,25 +1,62 @@
 import { useEffect, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../Redux Toolkit/Store";
 import { sendSmartMessage, closeChat, clearMessages } from "../../../Redux Toolkit/Customer/AiChatBotSlice";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { X, Send, Sparkles, Trash2, ShoppingBag, Package, Search } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 
-const QUICK_ACTIONS = [
+const QUICK_ACTIONS_GENERAL = [
   { icon: Search,      label: "Find products",     prompt: "Show me trending products" },
   { icon: Package,     label: "Track my order",    prompt: "Where is my latest order?" },
   { icon: ShoppingBag, label: "View my cart",      prompt: "What's in my cart?" },
   { icon: Sparkles,    label: "Best deals today",  prompt: "Show me the best deals today" },
 ];
 
+const QUICK_ACTIONS_PRODUCT = [
+  { icon: Sparkles,    label: "Is this worth it?", prompt: "Is this product worth buying?" },
+  { icon: Search,      label: "Find similar",      prompt: "Show me similar products" },
+  { icon: Package,     label: "Pros & cons",       prompt: "What are the pros and cons of this product?" },
+  { icon: ShoppingBag, label: "Why buy this?",     prompt: "Why should I buy this product?" },
+];
+
 const ChatBot = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
   const { messages, loading, isOpen } = useAppSelector(s => s.aiChatBot);
   
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // 🎯 Auto-detect if user is on a product page
+  // URL format: /product-details/:categoryId/:name/:productId
+// 🎯 Auto-detect product page from URL
+// URL format: /product-details/:categoryId/:name/:productId
+const getProductIdFromUrl = (pathname: string): string | null => {
+  // Match MongoDB ObjectId (24 hex chars) at the end of URL
+  const patterns = [
+    /\/product-details\/[^\/]+\/[^\/]+\/([a-f0-9]{24})/i,
+    /\/product-details\/([a-f0-9]{24})/i,
+    /\/product\/([a-f0-9]{24})/i,
+  ];
+
+  for (const pattern of patterns) {
+    const match = pathname.match(pattern);
+    if (match?.[1]) return match[1];
+  }
+  return null;
+};
+
+const currentProductId = getProductIdFromUrl(location.pathname);
+const isOnProductPage = !!currentProductId;
+
+// 🐛 Debug — check browser console
+console.log("🤖 ChatBot URL detection:", {
+  pathname: location.pathname,
+  detectedProductId: currentProductId,
+  isOnProductPage,
+});
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -35,7 +72,11 @@ const ChatBot = () => {
     const msg = customMessage || input.trim();
     if (!msg || loading) return;
     
-    dispatch(sendSmartMessage({ message: msg, history: messages }));
+    dispatch(sendSmartMessage({ 
+      message: msg, 
+      history: messages,
+      productId: currentProductId  // 🎯 Send product context!
+    }));
     setInput("");
   };
 
@@ -49,8 +90,12 @@ const ChatBot = () => {
 
   if (!isOpen) return null;
 
+  const quickActions = isOnProductPage ? QUICK_ACTIONS_PRODUCT : QUICK_ACTIONS_GENERAL;
+
   return (
-    <div className="fixed bottom-24 right-6 z-[9999] w-[400px] max-w-[calc(100vw-3rem)] h-[600px] max-h-[calc(100vh-8rem)] rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-slideUp"
+<div className="fixed z-[9999] rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-slideUp
+                bottom-0 right-0 left-0 top-0 w-full h-full rounded-none
+                sm:bottom-24 sm:right-6 sm:left-auto sm:top-auto sm:w-[400px] sm:max-w-[calc(100vw-3rem)] sm:h-[600px] sm:max-h-[calc(100vh-8rem)] sm:rounded-2xl"
          style={{ backgroundColor: "#16161f", border: "1px solid #2a2a3d" }}>
 
       {/* ── Header ── */}
@@ -62,7 +107,9 @@ const ChatBot = () => {
           </div>
           <div>
             <h3 className="text-white font-bold">Nexkart AI</h3>
-            <p className="text-white/70 text-xs">Your shopping assistant</p>
+            <p className="text-white/70 text-xs">
+              {isOnProductPage ? "🎯 Discussing this product" : "Your shopping assistant"}
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-1">
@@ -94,14 +141,18 @@ const ChatBot = () => {
                  style={{ background: "linear-gradient(135deg, #6C63FF, #8B7FFF)" }}>
               <Sparkles size={28} className="text-white" />
             </div>
-            <h4 className="text-white font-bold text-lg mb-2">Hi! I'm Nexkart AI 👋</h4>
+            <h4 className="text-white font-bold text-lg mb-2">
+              {isOnProductPage ? "Ask about this product 🛍️" : "Hi! I'm Nexkart AI 👋"}
+            </h4>
             <p className="text-sm mb-4" style={{ color: "#9ca3af" }}>
-              I can help you find products, track orders, and more!
+              {isOnProductPage 
+                ? "I can tell you about specs, price, reviews, alternatives, and more!"
+                : "I can help you find products, track orders, and more!"}
             </p>
             
-            {/* Quick actions */}
+            {/* Quick actions - context aware */}
             <div className="grid grid-cols-2 gap-2 mt-4">
-              {QUICK_ACTIONS.map((action, i) => (
+              {quickActions.map((action, i) => (
                 <button
                   key={i}
                   onClick={() => handleSend(action.prompt)}
@@ -121,7 +172,6 @@ const ChatBot = () => {
           <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
             <div className={`max-w-[85%] ${msg.role === "user" ? "items-end" : "items-start"} flex flex-col gap-2`}>
               
-              {/* Message bubble */}
               <div 
                 className={`px-4 py-2.5 rounded-2xl text-sm ${
                   msg.role === "user" 
@@ -229,7 +279,7 @@ const ChatBot = () => {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSend()}
-            placeholder="Ask me anything..."
+            placeholder={isOnProductPage ? "Ask about this product..." : "Ask me anything..."}
             disabled={loading}
             className="flex-1 px-4 py-2.5 rounded-full text-sm text-white outline-none transition-all"
             style={{ 
