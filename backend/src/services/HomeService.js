@@ -1,3 +1,5 @@
+// backend/src/services/HomeService.js
+
 const HomeCategorySection = require('../domain/HomeCategorySection');
 const Deal                = require('../models/Deal');
 const Banner              = require('../models/Banner');
@@ -6,14 +8,14 @@ const HomeCategory        = require('../models/HomeCategory');
 const HomeSettings        = require('../models/HomeSettings');
 const Brand               = require('../models/Brand');
 
-// ✅ Helper: normalize section names so old DB ("GRID") + new ("grid") both work
 const norm = (s) => String(s || "").toLowerCase().trim();
+
+// ✅ Common fields for all section item queries
+const SECTION_ITEM_FIELDS = "name image categoryId order section subcategory discount";
 
 class HomeService {
 
   async createHomePageData(allCategories) {
-
-    // ✅ Case-insensitive section filtering
     const gridCategories      = allCategories.filter(c => norm(c.section) === "grid");
     const shopByCategories    = allCategories.filter(c => norm(c.section) === "shop_by_categories");
     const electricCategories  = allCategories.filter(c => norm(c.section) === "electric_categories");
@@ -33,19 +35,20 @@ class HomeService {
       Deal.find().populate("category", "name categoryId image").lean(),
       Banner.find({ isActive: true }).select("image link order title subtitle").sort({ order: 1 }).lean(),
 
-      SectionItem.find({ section: "men",         isActive: true }).select("title image link order section").sort({ order: 1 }).lean(),
-      SectionItem.find({ section: "women",       isActive: true }).select("title image link order section").sort({ order: 1 }).lean(),
-      SectionItem.find({ section: "electronics", isActive: true }).select("title image link order section").sort({ order: 1 }).lean(),
-      SectionItem.find({ section: "fashion",     isActive: true }).select("title image link order section").sort({ order: 1 }).lean(),
-      SectionItem.find({ section: "lightning",   isActive: true }).select("title image link order section").sort({ order: 1 }).lean(),
-      SectionItem.find({ section: "furniture",   isActive: true }).select("title image link order section").sort({ order: 1 }).lean(),
+      // ✅ FIXED — use real schema fields
+      SectionItem.find({ section: "men",         isActive: true }).select(SECTION_ITEM_FIELDS).sort({ order: 1 }).lean(),
+      SectionItem.find({ section: "women",       isActive: true }).select(SECTION_ITEM_FIELDS).sort({ order: 1 }).lean(),
+      SectionItem.find({ section: "electronics", isActive: true }).select(SECTION_ITEM_FIELDS).sort({ order: 1 }).lean(),
+      SectionItem.find({ section: "fashion",     isActive: true }).select(SECTION_ITEM_FIELDS).sort({ order: 1 }).lean(),
+      SectionItem.find({ section: "lightning",   isActive: true }).select(SECTION_ITEM_FIELDS).sort({ order: 1 }).lean(),
+      SectionItem.find({ section: "furniture",   isActive: true }).select(SECTION_ITEM_FIELDS).sort({ order: 1 }).lean(),
 
-      SectionItem.find({ section: "men",         showInViewAll: true }).select("title image link order section subcategory").sort({ subcategory: 1, order: 1 }).lean(),
-      SectionItem.find({ section: "women",       showInViewAll: true }).select("title image link order section subcategory").sort({ subcategory: 1, order: 1 }).lean(),
-      SectionItem.find({ section: "electronics", showInViewAll: true }).select("title image link order section subcategory").sort({ subcategory: 1, order: 1 }).lean(),
-      SectionItem.find({ section: "fashion",     showInViewAll: true }).select("title image link order section subcategory").sort({ subcategory: 1, order: 1 }).lean(),
-      SectionItem.find({ section: "lightning",   showInViewAll: true }).select("title image link order section subcategory").sort({ subcategory: 1, order: 1 }).lean(),
-      SectionItem.find({ section: "furniture",   showInViewAll: true }).select("title image link order section subcategory").sort({ subcategory: 1, order: 1 }).lean(),
+      SectionItem.find({ section: "men",         showInViewAll: true }).select(SECTION_ITEM_FIELDS).sort({ subcategory: 1, order: 1 }).lean(),
+      SectionItem.find({ section: "women",       showInViewAll: true }).select(SECTION_ITEM_FIELDS).sort({ subcategory: 1, order: 1 }).lean(),
+      SectionItem.find({ section: "electronics", showInViewAll: true }).select(SECTION_ITEM_FIELDS).sort({ subcategory: 1, order: 1 }).lean(),
+      SectionItem.find({ section: "fashion",     showInViewAll: true }).select(SECTION_ITEM_FIELDS).sort({ subcategory: 1, order: 1 }).lean(),
+      SectionItem.find({ section: "lightning",   showInViewAll: true }).select(SECTION_ITEM_FIELDS).sort({ subcategory: 1, order: 1 }).lean(),
+      SectionItem.find({ section: "furniture",   showInViewAll: true }).select(SECTION_ITEM_FIELDS).sort({ subcategory: 1, order: 1 }).lean(),
 
       HomeSettings.findOne().lean(),
     ]);
