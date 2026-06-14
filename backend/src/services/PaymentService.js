@@ -1,6 +1,6 @@
 // Import necessary modules
 const Razorpay = require('razorpay');
-const stripe = require('stripe')('sk_test_51OY24RHktfaHaMpma35wc5WWVeCTtr23N5crNHIT0RkFlc7tQkAqdoH09x4QbHOfZfQf6MIvcio4lTJFllnOxGxj00dI1RvRn5');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const PaymentOrder = require('../models/PaymentOrder'); // Assuming you have Mongoose models defined
 const Order = require('../models/Order');
 const User = require('../models/User');
