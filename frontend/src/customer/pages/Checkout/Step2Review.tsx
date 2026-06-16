@@ -1,8 +1,16 @@
-import { Button, Divider } from "@mui/material";
-import { motion } from "framer-motion";
+// frontend/src/customer/pages/Checkout/Step2Review.tsx
+
+import { useState, useEffect } from "react";
+import { Button, Divider, CircularProgress } from "@mui/material";
+import { motion, AnimatePresence } from "framer-motion";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ReceiptIcon from "@mui/icons-material/Receipt";
+import LocalOfferIcon from "@mui/icons-material/LocalOffer";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import CloseIcon from "@mui/icons-material/Close";
 import { useTheme } from "../../../routes/CustomerRoutes";
+import { useAppDispatch, useAppSelector } from "../../../Redux Toolkit/Store";
+import { applyCoupon } from "../../../Redux Toolkit/Customer/CouponSlice";
 import type { CheckoutData } from "./Checkout";
 
 interface Props {
@@ -16,6 +24,13 @@ interface Props {
 
 const Step2Review = ({ mode, checkoutData, cart, selectedAddr, onBack, onNext }: Props) => {
   const { isDark } = useTheme();
+  const dispatch   = useAppDispatch();
+const couponState = useAppSelector((s) => s.coupone);
+
+  // ── Coupon state ──
+  const [couponCode,   setCouponCode]   = useState("");
+  const [couponMsg,    setCouponMsg]    = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount: number } | null>(null);
 
   const c = {
     text:    isDark ? "#f1f5f9" : "#0f172a",
@@ -26,9 +41,10 @@ const Step2Review = ({ mode, checkoutData, cart, selectedAddr, onBack, onNext }:
     border:  isDark ? "#1f1f2e" : "#e5e7eb",
     accent:  "#6366f1",
     success: "#10b981",
+    warning: "#f59e0b",
+    danger:  "#ef4444",
     successBg: isDark ? "rgba(16,185,129,0.08)" : "#f0fdf4",
   };
-  
 
   // ── Build items list ──
   let items: any[] = [];
@@ -60,12 +76,91 @@ const Step2Review = ({ mode, checkoutData, cart, selectedAddr, onBack, onNext }:
     totalItems   = cart.cartItems.reduce((s: number, i: any) => s + (i.quantity || 1), 0);
   }
 
-  const discount = totalMrp - totalSelling;
-  const shipping = totalSelling >= 499 ? 0 : 49;
-  const finalTotal = totalSelling + shipping;
+  const discount   = totalMrp - totalSelling;
+  const couponOff  = appliedCoupon?.discount || 0;
+  const shipping   = (totalSelling - couponOff) >= 499 ? 0 : 49;
+  const finalTotal = totalSelling - couponOff + shipping;
+
+  // ── Apply Coupon ──
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) {
+      setCouponMsg({ type: "error", text: "Please enter a coupon code" });
+      return;
+    }
+
+    const jwt = localStorage.getItem("jwt") || "";
+
+    try {
+      const result = await dispatch(
+        applyCoupon({
+          apply:      "true",
+          code:       couponCode.trim().toUpperCase(),
+          orderValue: totalSelling,
+          jwt,
+        })
+      ).unwrap();
+
+      // Backend returns updated cart with couponPrice
+      const discountAmt = result?.couponPrice || 0;
+
+      if (discountAmt > 0) {
+        setAppliedCoupon({ code: couponCode.trim().toUpperCase(), discount: discountAmt });
+        setCouponMsg({
+          type: "success",
+          text: `🎉 ₹${discountAmt} discount applied!`,
+        });
+      } else {
+        setCouponMsg({
+          type: "error",
+          text: "Coupon applied but no discount available",
+        });
+      }
+    } catch (err: any) {
+      setCouponMsg({
+        type: "error",
+        text: err || "Invalid or expired coupon",
+      });
+    }
+  };
+
+  // ── Remove Coupon ──
+  const handleRemoveCoupon = async () => {
+    if (!appliedCoupon) return;
+
+    const jwt = localStorage.getItem("jwt") || "";
+
+    try {
+      await dispatch(
+        applyCoupon({
+          apply:      "false",
+          code:       appliedCoupon.code,
+          orderValue: totalSelling,
+          jwt,
+        })
+      ).unwrap();
+    } catch (err) {
+      // ignore — clear anyway
+    }
+
+    setAppliedCoupon(null);
+    setCouponCode("");
+    setCouponMsg(null);
+  };
+
+  // Auto-hide message after 4 seconds
+  useEffect(() => {
+    if (couponMsg) {
+      const t = setTimeout(() => setCouponMsg(null), 4000);
+      return () => clearTimeout(t);
+    }
+  }, [couponMsg]);
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: 20 }}>
+    <div style={{
+      display: "grid",
+      gridTemplateColumns: window.innerWidth < 900 ? "1fr" : "1fr 360px",
+      gap: 20,
+    }}>
 
       {/* ── LEFT: Items + Address ── */}
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -181,7 +276,7 @@ const Step2Review = ({ mode, checkoutData, cart, selectedAddr, onBack, onNext }:
         </div>
       </div>
 
-      {/* ── RIGHT: Price breakdown ── */}
+      {/* ── RIGHT: Price breakdown + Coupon ── */}
       <div>
         <div style={{
           background: c.bgCard,
@@ -191,6 +286,161 @@ const Step2Review = ({ mode, checkoutData, cart, selectedAddr, onBack, onNext }:
           position: "sticky",
           top: 20,
         }}>
+
+          {/* ════════════════════════════════════════ */}
+          {/* ✅ NEW — COUPON SECTION                 */}
+          {/* ════════════════════════════════════════ */}
+          <div style={{
+            background: c.bgInner,
+            borderRadius: 12,
+            padding: 14,
+            marginBottom: 16,
+            border: `1.5px dashed ${appliedCoupon ? c.success : c.accent}`,
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+              <LocalOfferIcon sx={{ color: appliedCoupon ? c.success : c.accent, fontSize: 18 }} />
+              <span style={{
+                fontSize: 13,
+                fontWeight: 700,
+                color: c.text,
+              }}>
+                {appliedCoupon ? "Coupon Applied" : "Have a coupon?"}
+              </span>
+            </div>
+
+            <AnimatePresence mode="wait">
+              {appliedCoupon ? (
+                // Applied Coupon Display
+                <motion.div
+                  key="applied"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    padding: "10px 12px",
+                    background: c.successBg,
+                    borderRadius: 8,
+                    border: `1px solid ${c.success}40`,
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <CheckCircleIcon sx={{ color: c.success, fontSize: 18 }} />
+                    <div>
+                      <p style={{
+                        fontSize: 13, fontWeight: 800,
+                        color: c.success,
+                        fontFamily: "monospace",
+                        letterSpacing: 1,
+                        margin: 0,
+                      }}>
+                        {appliedCoupon.code}
+                      </p>
+                      <p style={{ fontSize: 11, color: c.textSec, margin: 0 }}>
+                        Saved ₹{appliedCoupon.discount.toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleRemoveCoupon}
+                    style={{
+                      background: "transparent",
+                      border: "none",
+                      cursor: "pointer",
+                      color: c.danger,
+                      display: "flex",
+                      alignItems: "center",
+                      padding: 4,
+                    }}
+                  >
+                    <CloseIcon sx={{ fontSize: 18 }} />
+                  </button>
+                </motion.div>
+              ) : (
+                // Coupon Input
+                <motion.div
+                  key="input"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  style={{ display: "flex", gap: 8 }}
+                >
+                  <input
+                    type="text"
+                    placeholder="Enter coupon code"
+                    value={couponCode}
+                    onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                    onKeyDown={(e) => e.key === "Enter" && handleApplyCoupon()}
+                    style={{
+                      flex: 1,
+                      padding: "9px 12px",
+                      borderRadius: 8,
+                      border: `1.5px solid ${c.border}`,
+                      background: c.bgCard,
+                      color: c.text,
+                      fontSize: 13,
+                      fontFamily: "monospace",
+                      letterSpacing: 1,
+                      fontWeight: 600,
+                      outline: "none",
+                      textTransform: "uppercase",
+                    }}
+                  />
+                  <button
+                    onClick={handleApplyCoupon}
+                    disabled={couponState.loading}
+                    style={{
+                      padding: "9px 16px",
+                      borderRadius: 8,
+                      border: "none",
+                      background: couponState.loading
+                        ? c.textMute
+                        : "linear-gradient(135deg, #6366f1, #8b5cf6)",
+                      color: "#fff",
+                      fontSize: 12,
+                      fontWeight: 700,
+                      cursor: couponState.loading ? "not-allowed" : "pointer",
+                      minWidth: 70,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    {couponState.loading ? (
+                      <CircularProgress size={14} sx={{ color: "#fff" }} />
+                    ) : (
+                      "Apply"
+                    )}
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Coupon Message */}
+            <AnimatePresence>
+              {couponMsg && (
+                <motion.p
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: couponMsg.type === "success" ? c.success : c.danger,
+                    margin: "8px 0 0",
+                  }}
+                >
+                  {couponMsg.text}
+                </motion.p>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* ════════════════════════════════════════ */}
+          {/* Price Details                            */}
+          {/* ════════════════════════════════════════ */}
           <h3 style={{ fontSize: 15, fontWeight: 700, color: c.text, margin: "0 0 14px" }}>
             Price Details
           </h3>
@@ -202,8 +452,16 @@ const Step2Review = ({ mode, checkoutData, cart, selectedAddr, onBack, onNext }:
             </div>
             {discount > 0 && (
               <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span style={{ color: c.textSec }}>Discount</span>
+                <span style={{ color: c.textSec }}>Product Discount</span>
                 <span style={{ color: c.success, fontWeight: 700 }}>− ₹{discount.toLocaleString()}</span>
+              </div>
+            )}
+            {couponOff > 0 && (
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <span style={{ color: c.textSec }}>
+                  🎟️ Coupon ({appliedCoupon?.code})
+                </span>
+                <span style={{ color: c.success, fontWeight: 700 }}>− ₹{couponOff.toLocaleString()}</span>
               </div>
             )}
             <div style={{ display: "flex", justifyContent: "space-between" }}>
@@ -223,7 +481,7 @@ const Step2Review = ({ mode, checkoutData, cart, selectedAddr, onBack, onNext }:
             </span>
           </div>
 
-          {discount > 0 && (
+          {(discount + couponOff) > 0 && (
             <div style={{
               padding: 10,
               background: c.successBg,
@@ -234,7 +492,7 @@ const Step2Review = ({ mode, checkoutData, cart, selectedAddr, onBack, onNext }:
               fontWeight: 700,
               textAlign: "center",
             }}>
-              🎉 You'll save ₹{discount.toLocaleString()} on this order!
+              🎉 You'll save ₹{(discount + couponOff).toLocaleString()} on this order!
             </div>
           )}
 

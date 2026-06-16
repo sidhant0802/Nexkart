@@ -33,7 +33,7 @@ class HomeService {
       homeSettings,
     ] = await Promise.all([
       Deal.find().populate("category", "name categoryId image").lean(),
-      Banner.find({ isActive: true }).select("image link order title subtitle").sort({ order: 1 }).lean(),
+      Banner.find({ isActive: true }).sort({ order: 1 }).lean(),
 
       // ✅ FIXED — use real schema fields
       SectionItem.find({ section: "men",         isActive: true }).select(SECTION_ITEM_FIELDS).sort({ order: 1 }).lean(),

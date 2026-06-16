@@ -1,10 +1,10 @@
-// src/customer/components/Footer/Footer.tsx
+// frontend/src/customer/components/Footer/Footer.tsx
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import {
-  MapPin, Phone, Mail, Zap, ArrowRight,
+  MapPin, Phone, Mail, ArrowRight,
   Shield, Truck, RefreshCw, Headphones,
   ChevronDown, CheckCircle,
 } from "lucide-react";
@@ -14,9 +14,8 @@ const footerSections = [
     title: "Company",
     links: [
       { label: "About Nexkart", href: "/about" },
-      { label: "Careers", href: "/careers", badge: "Hiring!" },
-      { label: "Press & Media", href: "/press" },
       { label: "Blog", href: "/blog" },
+      { label: "Press & Media", href: "/press" },
     ],
   },
   {
@@ -34,7 +33,6 @@ const footerSections = [
       { label: "Start Selling", href: "/become-seller", badge: "Free!" },
       { label: "Seller Portal", href: "/seller" },
       { label: "Guidelines", href: "/guidelines" },
-      { label: "Commission Rates", href: "/commissions" },
     ],
   },
   {
@@ -43,36 +41,38 @@ const footerSections = [
       { label: "Privacy Policy", href: "/privacy" },
       { label: "Terms of Service", href: "/terms" },
       { label: "Cookie Policy", href: "/cookies" },
-      { label: "Sitemap", href: "/sitemap" },
     ],
   },
 ];
 
-// ✅ Using emoji instead of missing icons
 const socials = [
-  { emoji: "f", href: "#", label: "Facebook", bg: "#1877f2" },
-  { emoji: "𝕏", href: "#", label: "Twitter", bg: "#000000" },
-  { emoji: "📸", href: "#", label: "Instagram", bg: "#e4405f" },
-  { emoji: "▶", href: "#", label: "YouTube", bg: "#ff0000" },
-  { emoji: "in", href: "#", label: "LinkedIn", bg: "#0077b5" },
+  {
+    label: "Instagram",
+    href: "https://www.instagram.com/sidhant0812?igsh=MTJpZjRucjU3MjAzbw%3D%3D&utm_source=qr",
+    bg: "#e4405f",
+    emoji: "📸",
+  },
+  {
+    label: "LinkedIn",
+    href: "https://www.linkedin.com/in/sidhant-nirupam-a1988431a/",
+    bg: "#0077b5",
+    emoji: "in",
+  },
 ];
 
 const trustBadges = [
-  { icon: Shield, text: "SSL Secured", sub: "256-bit encryption" },
-  { icon: Truck, text: "Fast Delivery", sub: "Same day possible" },
-  { icon: RefreshCw, text: "Easy Returns", sub: "7-day policy" },
-  { icon: Headphones, text: "24/7 Support", sub: "Always here" },
+  { icon: Shield,      text: "SSL Secured",   sub: "256-bit encryption" },
+  { icon: Truck,       text: "Fast Delivery",  sub: "Pan India shipping"  },
+  { icon: RefreshCw,   text: "Easy Returns",   sub: "7-day policy"        },
+  { icon: Headphones,  text: "24/7 Support",   sub: "Always here"         },
 ];
 
-const paymentMethods = [
-  "Visa", "Mastercard", "RuPay",
-  "UPI", "PayTM", "Razorpay", "EMI",
-];
+const paymentMethods = ["Visa", "Mastercard", "RuPay", "UPI", "PayTM", "Razorpay", "EMI"];
 
 const Footer = () => {
-  const [email, setEmail] = useState("");
+  const [email, setEmail]           = useState("");
   const [subscribed, setSubscribed] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading]       = useState(false);
   const [openSection, setOpenSection] = useState<string | null>(null);
 
   const handleSubscribe = async (e: React.FormEvent) => {
@@ -87,7 +87,7 @@ const Footer = () => {
   return (
     <footer className="bg-[#07070f] border-t border-white/5">
 
-      {/* Trust Badges */}
+      {/* ── Trust Badges ── */}
       <div className="border-b border-white/5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -104,9 +104,7 @@ const Footer = () => {
                   <badge.icon size={18} className="text-indigo-400" />
                 </div>
                 <div>
-                  <div className="text-white text-sm font-semibold">
-                    {badge.text}
-                  </div>
+                  <div className="text-white text-sm font-semibold">{badge.text}</div>
                   <div className="text-white/30 text-xs">{badge.sub}</div>
                 </div>
               </motion.div>
@@ -115,50 +113,39 @@ const Footer = () => {
         </div>
       </div>
 
-      {/* Main Footer */}
+      {/* ── Main Footer ── */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
 
           {/* Brand Column */}
-                   {/* Brand Column */}
           <div className="lg:col-span-3 space-y-6">
             <Link to="/">
-              <motion.div
-                whileHover={{ scale: 1.03 }}
-                className="flex items-center w-fit"
-              >
-                <img 
-                  src="/logo.png" 
-                  alt="Nexkart" 
-                  className="h-14 w-auto"
-                />
+              <motion.div whileHover={{ scale: 1.03 }} className="flex items-center w-fit">
+                <img src="/logo.png" alt="Nexkart" className="h-14 w-auto" />
               </motion.div>
             </Link>
 
             <p className="text-white/35 text-sm leading-relaxed">
-              India's fastest-growing multivendor marketplace. Connecting
-              millions of buyers with 2,000+ verified sellers across 50+
-              categories.
+              Nexkart is a growing Indian multivendor marketplace connecting
+              buyers with verified sellers across multiple categories — built
+              with ❤️ from Bihar.
             </p>
 
-            {/* Contact Info */}
+            {/* Contact */}
             <div className="space-y-2.5">
               {[
-                { icon: MapPin, text: "Koramangala, Bangalore - 560034" },
-                { icon: Phone, text: "1800-NEXKART (Free)" },
-                { icon: Mail, text: "support@nexkart.in" },
+                { icon: MapPin, text: "Madhepura, Bihar — 852113" },
+                { icon: Phone, text: "+91 70619 10723"            },
+                { icon: Mail,  text: "sidhantnirupam@gmail.com"   },
               ].map(({ icon: Icon, text }) => (
-                <div
-                  key={text}
-                  className="flex items-center gap-3 text-white/35 text-xs"
-                >
+                <div key={text} className="flex items-center gap-3 text-white/35 text-xs">
                   <Icon size={13} className="text-indigo-400 flex-shrink-0" />
                   {text}
                 </div>
               ))}
             </div>
 
-            {/* Social Links */}
+            {/* Socials */}
             <div>
               <p className="text-white/25 text-xs uppercase tracking-widest mb-3">
                 Follow Us
@@ -168,6 +155,8 @@ const Footer = () => {
                   <motion.a
                     key={s.label}
                     href={s.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     whileHover={{ scale: 1.15, y: -3 }}
                     whileTap={{ scale: 0.9 }}
                     title={s.label}
@@ -180,32 +169,29 @@ const Footer = () => {
               </div>
             </div>
 
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-3 p-4 rounded-2xl bg-white/2 border border-white/5">
-              {[
-                { value: "2K+", label: "Vendors" },
-                { value: "50K+", label: "Products" },
-                { value: "1M+", label: "Buyers" },
-              ].map((stat) => (
-                <div key={stat.label} className="text-center">
-                  <div className="text-white font-black text-base bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
-                    {stat.value}
-                  </div>
-                  <div className="text-white/25 text-[10px]">{stat.label}</div>
-                </div>
-              ))}
+            {/* Built by */}
+            <div className="p-4 rounded-2xl bg-white/2 border border-white/5 space-y-1">
+              <p className="text-white/50 text-xs font-semibold">Built & Maintained by</p>
+              <p className="text-white font-bold text-sm">Sidhant Nirupam</p>
+              <a
+                href="https://www.linkedin.com/in/sidhant-nirupam-a1988431a/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-indigo-400 text-xs hover:underline"
+              >
+                View LinkedIn →
+              </a>
             </div>
           </div>
 
           {/* Links Grid */}
           <div className="lg:col-span-6">
+
             {/* Desktop */}
             <div className="hidden md:grid grid-cols-2 lg:grid-cols-4 gap-6">
               {footerSections.map((section) => (
                 <div key={section.title}>
-                  <h3 className="text-white font-bold text-sm mb-5">
-                    {section.title}
-                  </h3>
+                  <h3 className="text-white font-bold text-sm mb-5">{section.title}</h3>
                   <ul className="space-y-2.5">
                     {section.links.map((link) => (
                       <li key={link.label}>
@@ -238,17 +224,13 @@ const Footer = () => {
                 >
                   <button
                     onClick={() =>
-                      setOpenSection(
-                        openSection === section.title ? null : section.title
-                      )
+                      setOpenSection(openSection === section.title ? null : section.title)
                     }
                     className="w-full flex items-center justify-between p-4 text-white font-semibold text-sm"
                   >
                     {section.title}
                     <motion.div
-                      animate={{
-                        rotate: openSection === section.title ? 180 : 0,
-                      }}
+                      animate={{ rotate: openSection === section.title ? 180 : 0 }}
                       transition={{ duration: 0.2 }}
                     >
                       <ChevronDown size={16} className="text-white/30" />
@@ -285,11 +267,9 @@ const Footer = () => {
           {/* Newsletter */}
           <div className="lg:col-span-3 space-y-6">
             <div>
-              <h3 className="text-white font-bold text-lg mb-2">
-                Stay in the loop 📬
-              </h3>
+              <h3 className="text-white font-bold text-lg mb-2">Stay Updated 📬</h3>
               <p className="text-white/35 text-sm leading-relaxed">
-                Get exclusive deals and new arrivals before everyone else.
+                Get exclusive deals and new arrivals in your inbox.
               </p>
             </div>
 
@@ -303,12 +283,8 @@ const Footer = () => {
                 >
                   <CheckCircle size={20} className="text-green-400" />
                   <div>
-                    <div className="text-green-400 font-semibold text-sm">
-                      Subscribed! 🎉
-                    </div>
-                    <div className="text-white/30 text-xs">
-                      Check your inbox soon
-                    </div>
+                    <div className="text-green-400 font-semibold text-sm">Subscribed! 🎉</div>
+                    <div className="text-white/30 text-xs">Check your inbox soon</div>
                   </div>
                 </motion.div>
               ) : (
@@ -321,10 +297,7 @@ const Footer = () => {
                   className="space-y-3"
                 >
                   <div className="relative">
-                    <Mail
-                      size={15}
-                      className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/25"
-                    />
+                    <Mail size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/25" />
                     <input
                       type="email"
                       value={email}
@@ -344,10 +317,7 @@ const Footer = () => {
                     {loading ? (
                       <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                     ) : (
-                      <>
-                        Subscribe Now
-                        <ArrowRight size={15} />
-                      </>
+                      <> Subscribe <ArrowRight size={15} /> </>
                     )}
                   </motion.button>
                   <p className="text-white/20 text-[11px] text-center">
@@ -357,64 +327,50 @@ const Footer = () => {
               )}
             </AnimatePresence>
 
-            {/* App Download */}
-            <div>
-              <p className="text-white/25 text-xs uppercase tracking-widest mb-3">
-                Download App
+            {/* Contact Card */}
+            <div className="p-4 rounded-2xl bg-white/2 border border-white/5 space-y-3">
+              <p className="text-white/50 text-xs font-semibold uppercase tracking-wider">
+                Get in Touch
               </p>
-              <div className="space-y-2">
-                {[
-                  { platform: "App Store", emoji: "🍎", rating: "4.8★", dl: "1M+" },
-                  { platform: "Play Store", emoji: "🤖", rating: "4.7★", dl: "5M+" },
-                ].map((app) => (
-                  <motion.button
-                    key={app.platform}
-                    whileHover={{ scale: 1.03, x: 3 }}
-                    whileTap={{ scale: 0.97 }}
-                    className="w-full flex items-center gap-3 p-3 rounded-xl border border-white/8 bg-white/3 hover:border-white/15 hover:bg-white/5 transition-all"
-                  >
-                    <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-base">
-                      {app.emoji}
-                    </div>
-                    <div className="text-left">
-                      <div className="text-white text-xs font-semibold">
-                        {app.platform}
-                      </div>
-                      <div className="text-white/30 text-[10px]">
-                        {app.rating} · {app.dl} Downloads
-                      </div>
-                    </div>
-                  </motion.button>
-                ))}
-              </div>
+              <a
+                href="mailto:sidhantnirupam@gmail.com"
+                className="flex items-center gap-2 text-indigo-400 text-xs hover:underline"
+              >
+                <Mail size={12} /> sidhantnirupam@gmail.com
+              </a>
+              <a
+                href="tel:+917061910723"
+                className="flex items-center gap-2 text-indigo-400 text-xs hover:underline"
+              >
+                <Phone size={12} /> +91 70619 10723
+              </a>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Bottom Bar */}
+      {/* ── Bottom Bar ── */}
       <div className="border-t border-white/5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
           <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
+
             <p className="text-white/20 text-xs text-center">
-              © 2024 Nexkart Technologies Pvt. Ltd. All rights reserved.
-              Made with ❤️ in India 🇮🇳
+              © {new Date().getFullYear()} Nexkart · Made with ❤️ in India 🇮🇳
             </p>
 
             {/* Payment Methods */}
             <div className="flex items-center gap-1.5 flex-wrap justify-center">
               {paymentMethods.map((method) => (
-                <motion.span
+                <span
                   key={method}
-                  whileHover={{ scale: 1.08, y: -2 }}
-                  className="px-2.5 py-1 border border-white/8 rounded-lg text-white/20 text-[10px] font-medium hover:border-white/20 hover:text-white/40 transition-all cursor-default"
+                  className="px-2.5 py-1 border border-white/8 rounded-lg text-white/20 text-[10px] font-medium"
                 >
                   {method}
-                </motion.span>
+                </span>
               ))}
             </div>
 
-            {/* Legal Links */}
+            {/* Legal */}
             <div className="flex items-center gap-3 text-white/20 text-xs">
               {["Privacy", "Terms", "Cookies"].map((item, i, arr) => (
                 <span key={item} className="flex items-center gap-3">
@@ -424,9 +380,7 @@ const Footer = () => {
                   >
                     {item}
                   </Link>
-                  {i < arr.length - 1 && (
-                    <span className="text-white/10">•</span>
-                  )}
+                  {i < arr.length - 1 && <span className="text-white/10">•</span>}
                 </span>
               ))}
             </div>

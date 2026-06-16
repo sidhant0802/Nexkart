@@ -2,23 +2,28 @@ export interface BannerStat {
   val:   string;
   label: string;
 }
-
 export interface Banner {
-  _id?:       string;
-  title:      string;
-  highlight:  string;
-  subtitle:   string;
-  badge:      string;
-  cta:        string;
-  ctaLink:    string;
-  secondCta:  string;
-  secondLink: string;
-  image:      string;
-  overlay:    string;
-  accent:     string;
-  stats:      BannerStat[];
-  isActive:   boolean;
-  order:      number;
+  _id?:        string;
+  title:       string;
+  highlight:   string;
+  subtitle:    string;
+  badge?:      string;
+
+  cta:         string;
+  ctaLink:     string;
+  secondCta?:  string;
+  secondLink?: string;
+
+  image:        string;
+  mobileImage?: string;   // ✅ NEW
+
+  overlay?:    string;
+  accent?:     string;
+
+  stats?:      { val: string; label: string }[];
+
+  isActive?:   boolean;
+  order?:      number;
 }
 
 export interface SectionItem {

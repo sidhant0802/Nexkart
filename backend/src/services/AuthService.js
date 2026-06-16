@@ -38,10 +38,12 @@ class AuthService {
     await sendVerificationEmail(email, subject, text);
   }
 
-  // ════════════════════════════════════════════════════════
-  // 2. SIGNUP — Create user with FULL details
+    // ════════════════════════════════════════════════════════
+  // 2. SIGNUP — Create user with FULL details + Auto Address
   // ════════════════════════════════════════════════════════
   async createUser(req) {
+    const Address = require("../models/Address");  // ✅ NEW
+
     const {
       email, fullName, otp, password,
       mobile, countryCode, dateOfBirth, gender,
@@ -79,6 +81,36 @@ class AuthService {
 
     await user.save();
 
+    // ✅ NEW — Auto-create shipping Address from location
+    if (
+      location &&
+      location.formattedAddress &&
+      location.city &&
+      location.state &&
+      location.pincode
+    ) {
+      try {
+        const newAddress = new Address({
+          name:     fullName,
+          locality: location.city,
+          address:  location.formattedAddress,
+          city:     location.city,
+          state:    location.state,
+          pinCode:  location.pincode,
+          mobile:   mobile || "0000000000",
+        });
+        await newAddress.save();
+
+        // Link address to user
+        user.addresses.push(newAddress._id);
+        await user.save();
+
+        console.log(`📍 Auto-created address for ${email}`);
+      } catch (err) {
+        console.warn("⚠️ Could not auto-create address:", err.message);
+      }
+    }
+
     // Create cart
     await new Cart({ user: user._id }).save();
 
@@ -88,8 +120,7 @@ class AuthService {
     const token = jwtProvider.createJwt({ email });
     return token;
   }
-
-  // ════════════════════════════════════════════════════════
+    // ════════════════════════════════════════════════════════
   // 3. SIGNIN with OTP
   // ════════════════════════════════════════════════════════
   async signinWithOtp(req) {

@@ -25,7 +25,7 @@ export default function CouponTable() {
   };
 
   const isExpired = (end: any) => end && new Date(end) < new Date();
-  const isActive  = (c: Coupon) => c.active && !isExpired(c.validityEndDate);
+const isActive  = (c: Coupon) => c.isActive && !isExpired(c.validityEndDate);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>

@@ -10,18 +10,22 @@ const bannerSchema = new mongoose.Schema({
   highlight:  { type: String, required: true },
   subtitle:   { type: String, required: true },
   badge:      { type: String, default: "" },
-  
+
   cta:        { type: String, default: "Shop Now" },
   ctaLink:    { type: String, default: "/" },
   secondCta:  { type: String, default: "View All" },
   secondLink: { type: String, default: "/" },
-  
-  image:      { type: String, required: true },
+
+  // ✅ Desktop image (landscape)
+  image:        { type: String, required: true },
+  // ✅ Mobile image (portrait/square) — optional, falls back to image
+  mobileImage:  { type: String, default: "" },
+
   overlay:    { type: String, default: "from-black/80 via-black/40 to-transparent" },
   accent:     { type: String, default: "#6366f1" },
-  
+
   stats:      { type: [statSchema], default: [] },
-  
+
   isActive:   { type: Boolean, default: true },
   order:      { type: Number,  default: 0 },
 }, { timestamps: true });

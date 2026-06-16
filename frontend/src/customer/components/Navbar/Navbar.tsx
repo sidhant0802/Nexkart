@@ -178,18 +178,20 @@ const Navbar = () => {
 
             {/* Logo */}
             <Link to="/" className="flex-shrink-0">
-              <motion.div whileHover={{ scale: 1.03 }} className="flex items-center">
-                <img
-                  src="/logo.png"
-                  alt="Nexkart"
-                  className="h-10 w-auto hidden sm:block"
-                />
-                <img
-                  src="/logo1.png"
-                  alt="Nexkart"
-                  className="h-10 w-auto sm:hidden"
-                />
-              </motion.div>
+             <motion.div whileHover={{ scale: 1.03 }} className="flex items-center">
+  {/* Desktop Logo */}
+  <img
+    src={isDark ? "/logo.png" : "/logo3.png"}
+    alt="Nexkart"
+    className="h-10 w-auto hidden sm:block"
+  />
+  {/* Mobile Logo */}
+  <img
+    src={isDark ? "/logo1.png" : "/logo3.png"}
+    alt="Nexkart"
+    className="h-10 w-auto sm:hidden"
+  />
+</motion.div>
             </Link>
 
             {/* Desktop Search */}

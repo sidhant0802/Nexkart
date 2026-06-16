@@ -1,38 +1,40 @@
+// frontend/src/customer/pages/Auth/Auth.tsx
+
 import { useEffect, useState } from "react";
 import { useAppSelector } from "../../../Redux Toolkit/Store";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Zap, X, CheckCircle, AlertCircle,
-  Sparkles, ShoppingBag, Shield, Truck, Star, Award,
+  X, CheckCircle, AlertCircle,
+  ShoppingBag, Shield, Truck, Star, Award,
 } from "lucide-react";
 import LoginForm from "./LoginForm";
 import SignupForm from "./SignupForm";
 
 const Auth = () => {
   const [isLoginPage, setIsLoginPage] = useState(true);
-  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; type: "success" | "error" }>({
-    open: false, message: "", type: "success",
-  });
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean; message: string; type: "success" | "error";
+  }>({ open: false, message: "", type: "success" });
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
-  const auth = useAppSelector((s) => s.auth);
-  const navigate = useNavigate();
-  const location = useLocation();
-  const from = (location.state as any)?.from || "/";
+  const auth      = useAppSelector((s) => s.auth);
+  const navigate  = useNavigate();
+  const location  = useLocation();
+  const from      = (location.state as any)?.from || "/";
 
   useEffect(() => {
-    if (localStorage.getItem("jwt") || auth?.jwt) {
-      navigate(from, { replace: true });
-    }
+    if (localStorage.getItem("jwt") || auth?.jwt) navigate(from, { replace: true });
   }, [auth?.jwt]);
 
   useEffect(() => {
-    if (auth.otpSent) setSnackbar({ open: true, message: "✉️ OTP sent! Check your inbox.", type: "success" });
+    if (auth.otpSent)
+      setSnackbar({ open: true, message: "✉️ OTP sent! Check your inbox.", type: "success" });
   }, [auth.otpSent]);
 
   useEffect(() => {
-    if (auth.error) setSnackbar({ open: true, message: auth.error, type: "error" });
+    if (auth.error)
+      setSnackbar({ open: true, message: auth.error, type: "error" });
   }, [auth.error]);
 
   useEffect(() => {
@@ -42,25 +44,22 @@ const Auth = () => {
     }
   }, [snackbar.open]);
 
-  // ✅ Mouse tracking for 3D effect
   const handleMouseMove = (e: React.MouseEvent) => {
     const { clientX, clientY, currentTarget } = e;
     const { left, top, width, height } = currentTarget.getBoundingClientRect();
     setMousePos({
-      x: ((clientX - left) / width - 0.5) * 20,
-      y: ((clientY - top) / height - 0.5) * 20,
+      x: ((clientX - left) / width  - 0.5) * 20,
+      y: ((clientY - top)  / height - 0.5) * 20,
     });
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-[#040408]" onMouseMove={handleMouseMove}>
-
-      {/* ═══════════════════════════════════════════════════════
-          ANIMATED BACKGROUND — Gradient Mesh + Particles
-      ═══════════════════════════════════════════════════════ */}
+    <div
+      className="min-h-screen relative overflow-hidden bg-[#040408]"
+      onMouseMove={handleMouseMove}
+    >
+      {/* ── Background ── */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-
-        {/* Animated gradient blobs */}
         <motion.div
           animate={{ x: [0, 100, 0], y: [0, -80, 0], scale: [1, 1.2, 1] }}
           transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
@@ -73,14 +72,8 @@ const Auth = () => {
           className="absolute bottom-1/4 -right-32 w-[700px] h-[700px] rounded-full opacity-25 blur-3xl"
           style={{ background: "radial-gradient(circle, #6366f1 0%, transparent 70%)" }}
         />
-        <motion.div
-          animate={{ x: [0, 80, 0], y: [0, -60, 0], scale: [1, 1.1, 1] }}
-          transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-1/2 left-1/2 w-[500px] h-[500px] rounded-full opacity-20 blur-3xl"
-          style={{ background: "radial-gradient(circle, #ec4899 0%, transparent 70%)" }}
-        />
 
-        {/* Grid overlay */}
+        {/* Grid */}
         <div
           className="absolute inset-0 opacity-[0.02]"
           style={{
@@ -90,83 +83,51 @@ const Auth = () => {
           }}
         />
 
-        {/* Floating particles */}
-        {[...Array(30)].map((_, i) => (
+        {/* Particles */}
+        {[...Array(20)].map((_, i) => (
           <motion.div
             key={i}
-            className="absolute w-1 h-1 rounded-full bg-white/30"
-            initial={{
-              x: Math.random() * window.innerWidth,
-              y: Math.random() * window.innerHeight,
-            }}
-            animate={{
-              y: [-20, -window.innerHeight - 20],
-              opacity: [0, 1, 0],
-            }}
+            className="absolute w-1 h-1 rounded-full bg-white/20"
+            initial={{ x: Math.random() * window.innerWidth, y: Math.random() * window.innerHeight }}
+            animate={{ y: [-20, -window.innerHeight - 20], opacity: [0, 1, 0] }}
             transition={{
               duration: Math.random() * 10 + 10,
               repeat: Infinity,
               delay: Math.random() * 5,
               ease: "linear",
             }}
-            style={{
-              left: `${Math.random() * 100}%`,
-              boxShadow: "0 0 6px rgba(167, 139, 250, 0.5)",
-            }}
+            style={{ left: `${Math.random() * 100}%` }}
           />
         ))}
       </div>
 
-      {/* ═══════════════════════════════════════════════════════
-          MAIN CONTENT
-      ═══════════════════════════════════════════════════════ */}
+      {/* ── Main ── */}
       <div className="relative z-10 min-h-screen flex">
 
-        {/* ═══════════ LEFT — Animated Showcase ═══════════ */}
+        {/* ── LEFT panel ── */}
         <div className="hidden lg:flex lg:w-1/2 flex-col justify-between p-12 relative">
 
           {/* Logo */}
-                   <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="flex items-center"
-          >
-            <img 
-              src="/logo.png" 
-              alt="Nexkart" 
-              className="h-16 w-auto drop-shadow-2xl"
-            />
+          <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }}>
+            <img src="/logo.png" alt="Nexkart" className="h-16 w-auto drop-shadow-2xl" />
           </motion.div>
 
-          {/* Center Content */}
+          {/* Center */}
           <div className="space-y-10">
-            {/* Animated heading */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
             >
-              <motion.div
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: 0.3 }}
-                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-6"
-                style={{
-                  background: "rgba(139,92,246,0.1)",
-                  border: "1px solid rgba(139,92,246,0.3)",
-                }}
-              >
-                <Sparkles size={12} className="text-purple-400" />
-                <span className="text-purple-300 text-xs font-semibold">India's #1 Shopping Hub</span>
-              </motion.div>
-
+              {/* ✅ Removed "India's #1" badge — replaced with clean headline */}
               <h1 className="text-5xl xl:text-6xl font-black text-white leading-[1.1] mb-5">
                 Shop Smarter,
                 <br />
                 <motion.span
                   className="inline-block bg-clip-text text-transparent"
                   style={{
-                    backgroundImage: "linear-gradient(135deg, #a78bfa 0%, #ec4899 50%, #818cf8 100%)",
+                    backgroundImage:
+                      "linear-gradient(135deg, #a78bfa 0%, #ec4899 50%, #818cf8 100%)",
                     backgroundSize: "200% 200%",
                   }}
                   animate={{ backgroundPosition: ["0% 0%", "100% 100%", "0% 0%"] }}
@@ -177,17 +138,18 @@ const Auth = () => {
               </h1>
 
               <p className="text-white/50 text-base leading-relaxed max-w-md">
-                Join millions of happy shoppers. Discover unbeatable deals, fastest delivery, and a seamless shopping experience.
+                Discover the best products from verified sellers across India —
+                fast delivery, easy returns, and secure payments.
               </p>
             </motion.div>
 
-            {/* Floating Stats Cards */}
+            {/* Stats */}
             <div className="grid grid-cols-2 gap-4">
               {[
-                { icon: ShoppingBag, num: "50K+", label: "Products", color: "#a78bfa" },
-                { icon: Shield,      num: "100%",  label: "Secure",   color: "#22c55e" },
-                { icon: Truck,       num: "Free",  label: "Delivery", color: "#3b82f6" },
-                { icon: Award,       num: "4.8★",  label: "Rated",    color: "#f59e0b" },
+                { icon: ShoppingBag, num: "Products",  label: "Wide Range",     color: "#a78bfa" },
+                { icon: Shield,      num: "Secure",    label: "Safe Payments",  color: "#22c55e" },
+                { icon: Truck,       num: "Pan India", label: "Delivery",       color: "#3b82f6" },
+                { icon: Award,       num: "Verified",  label: "Sellers",        color: "#f59e0b" },
               ].map((s, i) => (
                 <motion.div
                   key={s.label}
@@ -202,13 +164,12 @@ const Auth = () => {
                     backdropFilter: "blur(20px)",
                   }}
                 >
-                  {/* Glow */}
                   <div
                     className="absolute -top-10 -right-10 w-24 h-24 rounded-full opacity-30 blur-2xl"
                     style={{ background: s.color }}
                   />
                   <s.icon size={20} style={{ color: s.color }} className="mb-3" />
-                  <p className="text-white text-2xl font-black">{s.num}</p>
+                  <p className="text-white text-xl font-black">{s.num}</p>
                   <p className="text-white/40 text-xs mt-0.5 font-medium">{s.label}</p>
                 </motion.div>
               ))}
@@ -219,7 +180,7 @@ const Auth = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.9 }}
-              className="p-5 rounded-2xl relative overflow-hidden"
+              className="p-5 rounded-2xl"
               style={{
                 background: "rgba(255,255,255,0.03)",
                 border: "1px solid rgba(255,255,255,0.08)",
@@ -232,7 +193,7 @@ const Auth = () => {
                 </div>
                 <div className="flex-1">
                   <p className="text-white text-sm font-bold">Priya Sharma</p>
-                  <p className="text-white/40 text-xs">Verified Buyer • Mumbai</p>
+                  <p className="text-white/40 text-xs">Verified Buyer · Mumbai</p>
                 </div>
                 <div className="flex gap-0.5">
                   {[...Array(5)].map((_, i) => (
@@ -241,16 +202,15 @@ const Auth = () => {
                 </div>
               </div>
               <p className="text-white/60 text-sm leading-relaxed italic">
-                "Best shopping experience ever! Lightning-fast delivery and amazing products."
+                "Best shopping experience! Fast delivery and great products."
               </p>
             </motion.div>
           </div>
 
-          {/* Footer */}
-          <p className="text-white/20 text-xs">© 2025 Nexkart Technologies · All rights reserved</p>
+          <p className="text-white/20 text-xs">© {new Date().getFullYear()} Nexkart · Made in India 🇮🇳</p>
         </div>
 
-        {/* ═══════════ RIGHT — Form with 3D Tilt ═══════════ */}
+        {/* ── RIGHT — Form ── */}
         <div className="w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-12">
           <motion.div
             className="w-full max-w-md"
@@ -261,19 +221,15 @@ const Auth = () => {
             }}
           >
             {/* Mobile Logo */}
-                     <motion.div
+            <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               className="flex items-center justify-center mb-8 lg:hidden"
             >
-              <img 
-                src="/logo.png" 
-                alt="Nexkart" 
-                className="h-12 w-auto"
-              />
+              <img src="/logo.png" alt="Nexkart" className="h-12 w-auto" />
             </motion.div>
 
-            {/* Glassmorphism Card */}
+            {/* Card */}
             <motion.div
               initial={{ opacity: 0, y: 30, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -283,19 +239,24 @@ const Auth = () => {
                 background: "rgba(20, 20, 35, 0.6)",
                 backdropFilter: "blur(40px)",
                 border: "1px solid rgba(255,255,255,0.08)",
-                boxShadow: "0 30px 100px rgba(0,0,0,0.6), 0 0 0 1px rgba(139,92,246,0.05)",
+                boxShadow: "0 30px 100px rgba(0,0,0,0.6)",
               }}
             >
-              {/* Animated border glow */}
-              <div className="absolute inset-0 rounded-3xl opacity-50 pointer-events-none"
+              <div
+                className="absolute inset-0 rounded-3xl opacity-50 pointer-events-none"
                 style={{
-                  background: "linear-gradient(135deg, rgba(139,92,246,0.15) 0%, transparent 50%, rgba(236,72,153,0.15) 100%)",
+                  background:
+                    "linear-gradient(135deg, rgba(139,92,246,0.15) 0%, transparent 50%, rgba(236,72,153,0.15) 100%)",
                 }}
               />
 
-              {/* ── Tab Header ── */}
-              <div className="relative flex p-1.5 m-4 rounded-2xl"
-                style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}
+              {/* Tabs */}
+              <div
+                className="relative flex p-1.5 m-4 rounded-2xl"
+                style={{
+                  background: "rgba(255,255,255,0.04)",
+                  border: "1px solid rgba(255,255,255,0.06)",
+                }}
               >
                 {["Login", "Sign Up"].map((tab, i) => (
                   <button
@@ -323,10 +284,8 @@ const Auth = () => {
                 ))}
               </div>
 
-              {/* ── Form Content ── */}
+              {/* Form Body */}
               <div className="px-7 pb-7">
-
-                {/* Welcome Heading */}
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={isLoginPage ? "login-h" : "signup-h"}
@@ -336,17 +295,13 @@ const Auth = () => {
                     transition={{ duration: 0.25 }}
                     className="mb-6"
                   >
-                    <motion.h2
-                      className="text-2xl font-black text-white"
-                      animate={{ backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }}
-                      transition={{ duration: 5, repeat: Infinity }}
-                    >
+                    <h2 className="text-2xl font-black text-white">
                       {isLoginPage ? (
                         <>Welcome back! <span className="inline-block animate-bounce">👋</span></>
                       ) : (
-                        <>Join the family! <span className="inline-block animate-bounce">🎉</span></>
+                        <>Join Nexkart! <span className="inline-block animate-bounce">🎉</span></>
                       )}
-                    </motion.h2>
+                    </h2>
                     <p className="text-white/40 text-sm mt-1.5">
                       {isLoginPage
                         ? "Sign in to continue your shopping journey"
@@ -355,7 +310,6 @@ const Auth = () => {
                   </motion.div>
                 </AnimatePresence>
 
-                {/* Forms */}
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={isLoginPage ? "login" : "signup"}
@@ -368,14 +322,12 @@ const Auth = () => {
                   </motion.div>
                 </AnimatePresence>
 
-                {/* Divider */}
                 <div className="flex items-center gap-3 my-6">
                   <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
                   <span className="text-white/30 text-xs font-medium">or</span>
                   <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
                 </div>
 
-                {/* Switch */}
                 <p className="text-center text-white/40 text-sm">
                   {isLoginPage ? "New to Nexkart?" : "Already have an account?"}{" "}
                   <motion.button
@@ -390,22 +342,22 @@ const Auth = () => {
               </div>
             </motion.div>
 
-            {/* Terms */}
             <motion.p
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
               className="text-center text-white/20 text-xs mt-5 leading-relaxed"
             >
               By continuing, you agree to our{" "}
-              <span className="text-white/40 hover:text-white cursor-pointer transition-colors">Terms</span> &{" "}
+              <span className="text-white/40 hover:text-white cursor-pointer transition-colors">Terms</span>{" "}
+              &{" "}
               <span className="text-white/40 hover:text-white cursor-pointer transition-colors">Privacy</span>
             </motion.p>
           </motion.div>
         </div>
       </div>
 
-      {/* ═══════════════════════════════════════════════════════
-          SNACKBAR
-      ═══════════════════════════════════════════════════════ */}
+      {/* ── Snackbar ── */}
       <AnimatePresence>
         {snackbar.open && (
           <motion.div
@@ -419,7 +371,9 @@ const Auth = () => {
             }`}
             style={{ backdropFilter: "blur(20px)" }}
           >
-            {snackbar.type === "success" ? <CheckCircle size={17} /> : <AlertCircle size={17} />}
+            {snackbar.type === "success"
+              ? <CheckCircle size={17} />
+              : <AlertCircle size={17} />}
             <span className="text-sm font-medium">{snackbar.message}</span>
             <button
               onClick={() => setSnackbar((p) => ({ ...p, open: false }))}
