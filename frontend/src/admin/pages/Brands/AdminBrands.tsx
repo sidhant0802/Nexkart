@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import {
   Plus, Search, Edit2, Trash2, Star, X,
-  BadgeCheck, Image as ImageIcon, Tag, Filter
+  BadgeCheck, Image as ImageIcon, Filter, Upload, Loader2
 } from "lucide-react";
 import {
   Dialog, IconButton, CircularProgress, Switch,
@@ -15,6 +15,7 @@ import {
   type Brand
 } from "../../../Redux Toolkit/Admin/BrandSlice";
 import { mainCategory } from "../../../data/category/mainCategory";
+import { uploadToCloudinary } from "../../../util/uploadToCloudinary";
 
 const AdminBrands: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -254,7 +255,7 @@ const AdminBrands: React.FC = () => {
 };
 
 // ════════════════════════════════════════════════════════
-// BRAND FORM COMPONENT (inline)
+// BRAND FORM COMPONENT (inline) — WITH FILE UPLOAD
 // ════════════════════════════════════════════════════════
 
 interface FormProps {
@@ -265,6 +266,10 @@ interface FormProps {
 const BrandForm: React.FC<FormProps> = ({ editBrand, onClose }) => {
   const dispatch = useAppDispatch();
   const { loading } = useAppSelector(s => s.brand);
+  
+  // ✅ NEW: Upload state
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string>("");
 
   const formik = useFormik({
     initialValues: editBrand ? {
@@ -286,6 +291,37 @@ const BrandForm: React.FC<FormProps> = ({ editBrand, onClose }) => {
     },
   });
 
+  // ✅ NEW: Handle file upload to Cloudinary
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      setUploadError("Please select an image file");
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError("Image size must be less than 5MB");
+      return;
+    }
+
+    setUploadError("");
+    setUploading(true);
+
+    try {
+      const url = await uploadToCloudinary(file);
+      formik.setFieldValue("logo", url);
+    } catch (error: any) {
+      console.error("Upload error:", error);
+      setUploadError(error.message || "Failed to upload image");
+    } finally {
+      setUploading(false);
+    }
+  };
+
   return (
     <form onSubmit={formik.handleSubmit}>
       {/* Header */}
@@ -305,7 +341,7 @@ const BrandForm: React.FC<FormProps> = ({ editBrand, onClose }) => {
         {/* Logo Preview */}
         {formik.values.logo && (
           <div className="flex justify-center">
-            <div className="w-32 h-32 bg-gray-50 rounded-xl border-2 border-gray-100 flex items-center justify-center p-3 overflow-hidden">
+            <div className="relative w-32 h-32 bg-gray-50 rounded-xl border-2 border-gray-100 flex items-center justify-center p-3 overflow-hidden">
               <img loading="lazy" decoding="async"
                 src={formik.values.logo}
                 alt="Preview"
@@ -314,9 +350,74 @@ const BrandForm: React.FC<FormProps> = ({ editBrand, onClose }) => {
                   (e.target as HTMLImageElement).style.display = "none";
                 }}
               />
+              {/* Remove image button */}
+              <button
+                type="button"
+                onClick={() => formik.setFieldValue("logo", "")}
+                className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 shadow-md"
+                title="Remove image"
+              >
+                <X size={12} />
+              </button>
             </div>
           </div>
         )}
+
+        {/* ✅ NEW: Upload Button */}
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Upload Logo Image
+          </label>
+          <label
+            htmlFor="logo-upload"
+            className={`flex items-center justify-center gap-2 w-full py-3 border-2 border-dashed rounded-xl cursor-pointer transition-all ${
+              uploading
+                ? "border-indigo-300 bg-indigo-50 cursor-not-allowed"
+                : "border-gray-300 hover:border-indigo-500 hover:bg-indigo-50"
+            }`}
+          >
+            {uploading ? (
+              <>
+                <Loader2 size={20} className="animate-spin text-indigo-600" />
+                <span className="text-sm font-medium text-indigo-600">
+                  Uploading to Cloudinary...
+                </span>
+              </>
+            ) : (
+              <>
+                <Upload size={20} className="text-gray-500" />
+                <span className="text-sm font-medium text-gray-600">
+                  Click to upload image (Max 5MB)
+                </span>
+              </>
+            )}
+            <input
+              id="logo-upload"
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleFileUpload}
+              disabled={uploading}
+            />
+          </label>
+          {uploadError && (
+            <p className="text-xs text-red-500 mt-1.5 flex items-center gap-1">
+              ⚠️ {uploadError}
+            </p>
+          )}
+          <p className="text-xs text-gray-400 mt-1.5">
+            Supports: JPG, PNG, WEBP, GIF, SVG
+          </p>
+        </div>
+
+        {/* Divider with "OR" */}
+        <div className="relative flex items-center my-2">
+          <div className="flex-grow border-t border-gray-200"></div>
+          <span className="flex-shrink mx-3 text-xs text-gray-400 font-semibold">
+            OR
+          </span>
+          <div className="flex-grow border-t border-gray-200"></div>
+        </div>
 
         {/* Name */}
         <TextField
@@ -333,7 +434,7 @@ const BrandForm: React.FC<FormProps> = ({ editBrand, onClose }) => {
         <TextField
           fullWidth
           name="logo"
-          label="Logo URL"
+          label="Logo URL (Or paste here)"
           placeholder="https://logo.clearbit.com/apple.com"
           value={formik.values.logo}
           onChange={formik.handleChange}
@@ -406,7 +507,7 @@ const BrandForm: React.FC<FormProps> = ({ editBrand, onClose }) => {
         </button>
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || uploading}
           className="flex-1 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-semibold text-sm shadow-md hover:shadow-lg transition-all disabled:opacity-60"
         >
           {loading ? (
