@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://via.placeholder.com/120x120/6C63FF/ffffff?text=NK" alt="NexKart Logo" width="120"/>
+<img src="frontend/public/logo1.png" alt="NexKart Logo" width="120"/>
 
 # NexKart
 
