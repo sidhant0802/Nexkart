@@ -15,7 +15,7 @@ import {
   type Brand
 } from "../../../Redux Toolkit/Admin/BrandSlice";
 import { mainCategory } from "../../../data/category/mainCategory";
-import { uploadToCloudinary } from "../../../util/uploadToCloudinary";
+import { uploadToCloudinary } from "../../../util/uploadToCloudnary";
 
 const AdminBrands: React.FC = () => {
   const dispatch = useAppDispatch();
