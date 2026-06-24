@@ -30,8 +30,15 @@ import BrandProducts  from '../customer/pages/Brands/BrandProducts'
 import AllBrands      from '../customer/pages/Brands/AllBrands'
 import SmartSearchResults from '../customer/pages/Search/SmartSearchResults'
 import ChatBot       from '../customer/pages/ChatBot/ChatBot'
+import ChatBotButton from '../customer/pages/ChatBot/ChatBotButton'
 import Checkout         from '../customer/pages/Checkout/Checkout'
 import CheckoutSuccess  from '../customer/pages/Checkout/CheckoutSuccess'
+
+// ✅ NEW imports
+import ReturnRequest from '../customer/pages/Account/ReturnRequest'
+import OrderChat     from '../customer/pages/Account/OrderChat'
+import { initSocket, disconnectSocket } from '../config/socket'
+import { fetchUserNotifications } from '../Redux Toolkit/Customer/NotificationSlice'
 
 export const ThemeContext = createContext<{
   isDark: boolean;
@@ -73,7 +80,17 @@ const CustomerRoutes = () => {
     if (jwt) {
       dispatch(fetchUserCart(typeof jwt === 'string' ? jwt : ''));
       dispatch(getWishlistByUserId());
+      // ✅ Fetch notifications
+      dispatch(fetchUserNotifications());
+      // ✅ Init socket for real-time
+      initSocket(typeof jwt === 'string' ? jwt : '');
+    } else {
+      disconnectSocket();
     }
+
+    return () => {
+      // Don't disconnect on re-render, only on logout
+    };
   }, [auth.jwt]);
 
   return (
@@ -133,6 +150,16 @@ const CustomerRoutes = () => {
           {/* ── Account ── */}
           <Route path="/account/*" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
 
+          {/* ✅ NEW — Return & Chat (standalone pages outside Profile layout) */}
+          <Route
+            path="/account/orders/:orderId/item/:orderItemId/return"
+            element={<ProtectedRoute><ReturnRequest /></ProtectedRoute>}
+          />
+          <Route
+            path="/account/orders/:orderId/chat"
+            element={<ProtectedRoute><OrderChat /></ProtectedRoute>}
+          />
+
           <Route path="/payment-success/:orderId" element={
             <ProtectedRoute><PaymentSuccessHandler /></ProtectedRoute>
           } />
@@ -141,6 +168,7 @@ const CustomerRoutes = () => {
         </Routes>
 
         <Footer />
+        <ChatBotButton />
         <ChatBot />
       </div>
     </ThemeContext.Provider>
