@@ -13,6 +13,7 @@ router.post("/",                 sellerController.createSeller);
 // ── Protected: Profile ──
 router.get("/profile",           sellerAuthMiddleware, sellerController.getSellerProfile);
 router.put("/profile",           sellerAuthMiddleware, sellerController.updateSeller);
+router.patch("/profile",         sellerAuthMiddleware, sellerController.updateSeller);
 
 // ── Protected: Dashboard ──
 router.get("/stats",             sellerAuthMiddleware, sellerController.getSellerStats);
@@ -20,6 +21,7 @@ router.get("/stats",             sellerAuthMiddleware, sellerController.getSelle
 // ── Protected: Listings ──
 router.get("/listings",                      sellerAuthMiddleware, sellerController.getSellerProductsWithListings);
 router.put("/listings/:listingId",           sellerAuthMiddleware, sellerController.updateListing);
+router.patch("/listings/:listingId",         sellerAuthMiddleware, sellerController.updateListing);
 router.delete("/listings/:listingId",        sellerAuthMiddleware, sellerController.deleteListing);
 
 // ── Protected: Catalog ──
