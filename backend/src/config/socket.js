@@ -7,7 +7,24 @@ let io = null;
 const initSocket = (httpServer) => {
   io = new Server(httpServer, {
     cors: {
-      origin:      "*",
+      origin: (origin, callback) => {
+        // Allow requests with no origin (mobile apps, Postman, server-to-server)
+        if (!origin) return callback(null, true);
+
+        const allowedOrigins = [
+          'http://localhost:5173',          // Vite local dev
+          'http://localhost:3000',          // React local dev
+          'http://localhost:4173',          // Vite preview
+          'https://nexkart.vercel.app',     // Production Vercel (update after deploy)
+        ];
+
+        // Allow listed origins OR any Vercel preview deployment
+        if (allowedOrigins.includes(origin) || /\.vercel\.app$/.test(origin)) {
+          return callback(null, true);
+        }
+
+        callback(new Error('Not allowed by Socket CORS'));
+      },
       methods:     ["GET", "POST"],
       credentials: true,
     },

@@ -1,16 +1,23 @@
-FROM node:18.17.0
+# Use Node.js 20 Alpine
+FROM node:20-alpine
 
-ENV NODE_ENV=production
-
+# Set working directory
 WORKDIR /app
 
-COPY ["package.json", "package-lock.json*", "./"]
+# Copy package files first
+COPY package*.json ./
 
-RUN npm install --production
+# Install production dependencies
+RUN npm install --omit=dev
 
+# Copy application code
 COPY . .
 
+# Create logs directory
+RUN mkdir -p logs
+
+# Expose port
 EXPOSE 8080
 
-
-CMD [ "node", "src/index.js" ]
+# Start the app (note: src/index.js path!)
+CMD ["node", "src/index.js"]

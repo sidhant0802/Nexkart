@@ -27,7 +27,30 @@ app.set('trust proxy', 1);
 // ── Security & Performance ──
 app.use(helmetMiddleware);
 app.use(compressionMiddleware);
-app.use(cors());
+// CORS - Allow frontend domains
+const allowedOrigins = [
+  'http://localhost:5173',           // Vite local
+  'http://localhost:3000',           // React local
+  'https://nexkart.vercel.app',      // Your Vercel URL (update after Vercel deploy)
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, Postman)
+    if (!origin) return callback(null, true);
+    
+    // Allow listed origins
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    
+    // Allow all Vercel preview deployments
+    if (/\.vercel\.app$/.test(origin)) return callback(null, true);
+    
+    callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
